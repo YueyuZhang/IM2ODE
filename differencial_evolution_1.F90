@@ -82,7 +82,7 @@ module differencial_evolution
         integer(i4b), intent(in) :: step
         integer(i4b) :: i,j,k, ratio_cut, a,b
         real(dp) :: tmp, y(3), p1(3), p2(3), p3(3), pbest(3)
-        real(dp) :: lambd = 0.1, F = 0.1
+        real(dp) :: lambd = 0.2, F = 0.2
         logical :: flag
         do i = 1, population
             if (pstruct(i) % energy < pool(i) % energy) pool(i) = pstruct(i)

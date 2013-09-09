@@ -11,6 +11,7 @@ module lattice_mod
         use kinds
         use constants, only : pi
         use parameters, only : population, pstruct, volumn
+        use parameters, only : fix_lat, fix_a, fix_b, fix_c, fix_alpha, fix_beta, fix_gama
         implicit none
         integer(i4b), intent(in) :: i
         real(dp) :: a,b,c, alph, beta, gama, ratio, vtmp
@@ -41,6 +42,14 @@ module lattice_mod
             if(gama < 10.0 / 180.0 * pi) f1 = .false.
             if(f1) exit
         end do
+        if(fix_lat) then
+            a = fix_a
+            b = fix_b
+            c = fix_c
+            alph = fix_alpha / 90.0 * pi / 2.0
+            beta = fix_beta / 90.0 * pi / 2.0
+            gama = fix_gama / 90.0 * pi / 2.0
+        end if
         vec(1) = a
         vec(2) = b
         vec(3) = c
@@ -89,6 +98,8 @@ module lattice_mod
         use constants, only : pi
         use parameters, only : population, pstruct, volumn
         use parameters, only : spg_index, spacegroup_log
+        use parameters, only : spg_front, spg_rear
+        use parameters, only : fix_lat, fix_a, fix_b, fix_c, fix_alpha, fix_beta, fix_gama
         implicit none
         integer(i4b), intent(in) :: i
         real(dp) :: a,b,c, alph, beta, gama, ratio, vtmp
@@ -97,17 +108,20 @@ module lattice_mod
         logical :: f1
         !do i = 1, population
         f1 = .false.
-        n_spg = 230
+        n_spg = spg_rear - spg_front + 1
         do
             call random_number(a)
-            spg_index = floor(n_spg * a + 1)
+            spg_index = floor(n_spg * a + spg_front)
             if(spacegroup_log(spg_index) == 0) then
                 spacegroup_log(spg_index) = 1
                 f1 = .true.
             end if
+            if(n_spg < 100) then
+                f1 = .true.
+            end if
             if(f1) exit
             if(sum(spacegroup_log) > n_spg * 0.75)then
-                do j = 10, floor(n_spg * a + 1)
+                do j = spg_front, floor(n_spg * a + spg_front)
                     if(spacegroup_log(j) == 0) then
                         spg_index = j
                         spacegroup_log(j) = 1
@@ -120,11 +134,13 @@ module lattice_mod
                 spacegroup_log = 0
             end if
         end do
-        if(spg_index > 230 .or. spg_index < 1) spg_index = 1
+        !if(spg_index > 230 .or. spg_index < 1) spg_index = 1
+        if(spg_index > spg_rear .or. spg_index < spg_front) spg_index = spg_front
         pstruct(i) % spg_idx = spg_index
         !pstruct(i) % spg_idx = 3
         !write(*, *) "end init spg_INDEX"
         do
+            if(fix_lat) exit
             call random_number(a)
             call random_number(b)
             call random_number(c)
@@ -175,6 +191,14 @@ module lattice_mod
             if(gama < 10.0 / 180.0 * pi) f1 = .false.
             if(f1) exit
         end do
+        if(fix_lat) then
+            a = fix_a
+            b = fix_b
+            c = fix_c
+            alph = fix_alpha / 90.0 * pi / 2.0
+            beta = fix_beta / 90.0 * pi / 2.0
+            gama = fix_gama / 90.0 * pi / 2.0
+        end if
         !write(*, *) "end init LAT"
         vec(1) = a
         vec(2) = b
@@ -185,6 +209,7 @@ module lattice_mod
         call vec2mat(vec, lat_tmp)
         call get_volumn(lat_tmp, vtmp)
         ratio = (volumn / vtmp) ** 0.33333333
+        if(fix_lat) ratio = 1.0
         vec(1) = a * ratio
         vec(2) = b * ratio
         vec(3) = c * ratio

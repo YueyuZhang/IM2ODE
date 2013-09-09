@@ -302,10 +302,12 @@ module init_struct_spg
         use kinds
         use parameters, only: struct_info
         use parameters, only: pstruct, population, num_species, num_ele, atom_dis
+        use parameters, only: Q2D, vacuum_layer
         use lattice_mod, only: init_lat_sym
         implicit none
         integer(i4b), intent(in) :: i
         integer(i4b) :: j,k,i1
+        real(dp) :: c1, c2, ratio
         logical :: f1
         !do i = 1, population
         write(*, *) "pop = ", i
@@ -328,6 +330,15 @@ module init_struct_spg
             if(f1) exit
         end do
         !end do
+        if(Q2D) then
+            c1 = pstruct(i) % lat(3,3)
+            c2 = vacuum_layer + c1
+            ratio = c1 / c2
+            do j = 1, pstruct(i) % natom
+                pstruct(i) % pos(3, j) = pstruct(i) % pos(3, j) * ratio
+            end do
+            pstruct(i) % lat(3, 3) = c2
+        end if
     end subroutine init_struct_sym
     
 end module init_struct_spg

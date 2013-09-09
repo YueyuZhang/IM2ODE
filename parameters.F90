@@ -41,6 +41,7 @@ module parameters
     
     ! sys_control_sym
     logical :: symmetry
+    integer(i4b) :: spg_front, spg_rear !specify which space group you want to use. range: [1, 230], spg_front <= spg_rear
     integer(i4b) :: spacegroup_log(230)
     integer(i4b) :: spg_index
     logical :: mode
@@ -55,6 +56,14 @@ module parameters
     integer(i4b) :: ES_mod
     real(dp) :: ES_Eg
     real(dp) :: Es_opt    ! works if and only if ES_mod=6, set the highest boundary for the optical gap
+    
+    !fix-lattice(control & parameters)
+    logical :: fix_lat
+    real(dp) :: fix_a, fix_b, fix_c, fix_alpha, fix_beta, fix_gama
+    
+    !Quansi-2D(control & parameters)
+    logical :: Q2D
+    real(dp) :: vacuum_layer
     
     
 end module parameters

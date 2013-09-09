@@ -17,6 +17,8 @@ module init_mod
         integer(i4b) :: i
         real(dp) :: inf = 1e8
         call init_rand()
+        call system("rm -f results")
+        call system("mkdir results")
         open(1224,file="results/run_de.out")
         write(1224, *) "start de searching ......"
         call read_input()
@@ -49,9 +51,11 @@ module init_mod
     
     subroutine read_input()
         use parameters, only : sys_name, num_species, num_ele, name_element, atom_dis, volumn
-        use parameters, only : population, max_step, de_ratio, symmetry
+        use parameters, only : population, max_step, de_ratio, symmetry, spg_front, spg_rear
         use parameters, only : mode, hardness, rcut, ionicity
         use parameters, only : ESflag, ES_mod, ES_Eg, Es_opt
+        use parameters, only : fix_lat, fix_a, fix_b, fix_c, fix_alpha, fix_beta, fix_gama
+        use parameters, only : Q2D, vacuum_layer
         use kinds
         implicit none
         
@@ -172,6 +176,20 @@ module init_mod
             read(number(i), *) symmetry
         end if
         
+        call find(nametag, "spg_front", i)
+        if(i == 0) then
+            spg_front = 1
+        else
+            read(number(i), *) spg_front
+        end if
+        
+        call find(nametag, "spg_rear", i)
+        if(i == 0) then
+            spg_rear = 230
+        else
+            read(number(i), *) spg_rear
+        end if
+        
         call find(nametag, "Multi-Objective", i)
         if(i == 0) then
             mode = .false.
@@ -233,6 +251,75 @@ module init_mod
             end if
         end if
         
+        call find(nametag, "Q2D", i)
+        if(i == 0) then
+            Q2D = .false.
+        else
+            read(number(i), *) Q2D
+            
+            call find(nametag, "vacuum_layer", i)
+            if(i == 0) then
+                vacuum_layer = 10.0
+            else
+                read(number(i), *) vacuum_layer
+            end if
+        end if
+        
+        call find(nametag, "fix_lat", i)
+        if(i == 0) then
+            fix_lat = .false.
+        else
+            read(number(i), *) fix_lat
+            
+            call find(nametag, "fix_a", i)
+            if(i == 0) then
+                write(1224, *) "Input fix_a"
+                fix_a = 1.0
+            else
+                read(number(i), *) fix_a
+            end if
+            
+            call find(nametag, "fix_b", i)
+            if(i == 0) then
+                write(1224, *) "Input fix_b"
+                fix_b = 1.0
+            else
+                read(number(i), *) fix_b
+            end if
+            
+            call find(nametag, "fix_c", i)
+            if(i == 0) then
+                write(1224, *) "Input fix_c"
+                fix_c = 10.0
+            else
+                read(number(i), *) fix_c
+            end if
+            
+            call find(nametag, "fix_alpha", i)
+            if(i == 0) then
+                write(1224, *) "Input fix_alpha"
+                fix_alpha = 90
+            else
+                read(number(i), *) fix_alpha
+            end if
+            
+            call find(nametag, "fix_beta", i)
+            if(i == 0) then
+                write(1224, *) "Input fix_beta"
+                fix_beta = 90
+            else
+                read(number(i), *) fix_beta
+            end if
+            
+            call find(nametag, "fix_gama", i)
+            if(i == 0) then
+                write(1224, *) "Input fix_gama"
+                fix_gama = 90
+            else
+                read(number(i), *) fix_gama
+            end if
+        end if
+        
     end subroutine read_input
     
     subroutine find(a, b, i)
@@ -266,6 +353,20 @@ module init_mod
         end do
         write(1224, *) "Population: ", population
         write(1224, *) "MaxStep: ", max_step
+        write(1224, *) "De_ratio: ", de_ratio
+        write(1224, *) "Symmetry: ", symmetry
+        write(1224, *) "Q2D: ", Q2D
+        if(Q2D) write(1224, *) "vacuum_layer: ", vacuum_layer
+        write(1224, *) "Multi-objective: ", mode
+        write(1224, *) "fix_lat: ", fix_lat
+        if(fix_lat) then
+            write(1224, *) "fix_a", fix_a
+            write(1224, *) "fix_b", fix_b
+            write(1224, *) "fix_c", fix_c
+            write(1224, *) "fix_alpha", fix_alpha
+            write(1224, *) "fix_beta", fix_beta
+            write(1224, *) "fix_gama", fix_gama
+        end if
         write(1224, *) "---end write input---"
     end subroutine write_input
         
