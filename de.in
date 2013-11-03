@@ -1,0 +1,62 @@
+# input file for de
+SystemName=CAu
+NumberOfSpecies=2
+NumberOfElements=72 6
+NameOfElements=C Au
+Volumn=80
+DistanceOfAtom=
+DIS1=1.2 1.2
+DIS2=1.2 1.8
+Population=15
+MaxStep=1
+De_ratio=0.6
+#Symmetry=T
+#spg_front=168
+#spg_rear=194
+
+#The unit of pressure is GPa
+#PSTRESS = 15
+
+#Multi-Objective=T
+#hardness=F
+#rcut=2.5
+#ionicity=0.0
+#ESflag=T
+#ES_mod=6
+#ES_Eg=0.4
+#ES_opt=1.0
+
+#HSE=T
+#HSE_population=6
+#LDA_population=20
+#energy_cut=-8.35
+#gap_cut=3.0
+
+#Q2D=T
+#vacuum_layer=10
+#Area=70.15
+
+cluster=T
+init_radius=1.5
+cluster_ctr_x=0.5
+cluster_ctr_y=0.5
+cluster_ctr_z=0.36
+cluster_substrate=T
+SubstrateElements=72 0
+
+
+fix_lat=T
+fix_a=14.8
+fix_b=14.8
+fix_c=25.0
+fix_alpha=120
+fix_beta=90
+fix_gama=90
+
+#find_defect=T
+#defect_type=1
+#the coordinates of center are in cartisian coordinates
+#center_x=1.5
+#center_y=1.5
+#center_z=1.5
+

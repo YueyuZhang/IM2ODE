@@ -24,6 +24,7 @@ module parameters
         real(dp) :: energy
         real(dp) :: hardness
         real(dp) :: Eg_id, Eg_d
+        logical :: SelectiveDynamics(3, max_atom * max_type)
     end type
     type(struct_info), dimension(max_struct) :: pstruct
     type(struct_info), dimension(max_struct) :: pool
@@ -45,6 +46,7 @@ module parameters
     integer(i4b) :: spacegroup_log(230)
     integer(i4b) :: spg_index
     logical :: mode
+    logical :: cluster
     
     !hardness
     logical :: hardness
@@ -57,13 +59,31 @@ module parameters
     real(dp) :: ES_Eg
     real(dp) :: Es_opt    ! works if and only if ES_mod=6, set the highest boundary for the optical gap
     
+    !cluster
+    !If cluster mode is used, lattice parameters must be fixed
+    real(dp) :: init_radius
+    logical :: cluster_substrate ! add substrate
+    integer(i4b) :: SubstrateElements(max_type)
+    type(struct_info) :: substrate
+    real(dp) :: cluster_ctr_x, cluster_ctr_y, cluster_ctr_z
+    
     !fix-lattice(control & parameters)
     logical :: fix_lat
     real(dp) :: fix_a, fix_b, fix_c, fix_alpha, fix_beta, fix_gama
     
+    !for high pressure system
+    logical :: PRESSURE
+    integer(i4b) :: PSTRESS
+    
     !Quansi-2D(control & parameters)
     logical :: Q2D
-    real(dp) :: vacuum_layer
+    real(dp) :: vacuum_layer, Area
+    
+    !defect structure
+    logical :: find_defect
+    type(struct_info) :: defect_struct
+    integer(i4b) :: defect_type ! geometry type of defect, 1: box, 2: spherecal
+    real(dp) :: center_x, center_y, center_z, defect_radius, length_x, length_y, length_z
     
     
 end module parameters

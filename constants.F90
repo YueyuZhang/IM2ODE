@@ -13,8 +13,8 @@ module constants
     
     real(dp), parameter :: pi = 3.14159265358979323846_DP
     
-    integer(i4b), parameter :: max_struct = 500
-    integer(i4b), parameter :: max_type = 10
+    integer(i4b), parameter :: max_struct = 100
+    integer(i4b), parameter :: max_type = 8
     integer(i4b), parameter :: max_atom = 100
     
 end module constants

@@ -9,13 +9,14 @@ program test
 use kinds
 use init_mod, only : init_run
 !use lattice_mod
+use init_struct_all, only : init_struct_tot
 use init_struct_spg, only : init_struct_sym
 use de_tools, only: read_vasp, write_vasp, write_input_all, write_vasp_all
 use de_tools, only: bulkmodu, ES_fitness
 !use run_lammps
 use differencial_evolution, only : run_de_vasp, run_mode_vasp
 !use sort, only : sort_results_mode
-use parameters, only : population, pstruct, pool, max_step, max_step, mode
+use parameters, only : population, pstruct, pool, max_step, max_step, mode, cluster
 use parameters, only : hardness, ESflag
 implicit none
 integer(i4b) :: a, i, j
@@ -53,7 +54,13 @@ call init_run()
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 do i = 1, population
     !call init_lat_sym(i)
-    call init_struct_sym(i)
+    write(*, *) "init_struct: ", i
+    call init_struct_tot(i)
+    !if(cluster) then
+    !    call init_struct_cluster(i)
+    !else
+    !    call init_struct_sym(i)
+    !end if
 end do
 
 do j = 1, max_step

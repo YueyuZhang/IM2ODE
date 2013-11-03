@@ -75,23 +75,33 @@ module differencial_evolution
     subroutine run_de_vasp(step)
         use kinds
         use parameters, only : pstruct, pool, population, de_ratio
+        use parameters, only : Q2D, vacuum_layer, cluster
         use sort, only : sort_results
-        use init_struct_spg, only : init_struct_sym
+        use init_struct_all, only : init_struct_tot
         use sort_atom_idx, only : kmatch
         implicit none
         integer(i4b), intent(in) :: step
         integer(i4b) :: i,j,k, ratio_cut, a,b
         real(dp) :: tmp, y(3), p1(3), p2(3), p3(3), pbest(3)
         real(dp) :: lambd = 0.2, F = 0.2
+        real(dp) :: c1, c2, c3, ratio, max_z, min_z
         logical :: flag
+        write(*, *) "start de_operation"
         do i = 1, population
-            if (pstruct(i) % energy < pool(i) % energy) pool(i) = pstruct(i)
+            write(*, *) "energy now : old", pstruct(i) % energy, pool(i) % energy
+            if (pstruct(i) % energy < pool(i) % energy) then
+                write(*, *) "renew: ", i
+                pool(i) = pstruct(i)
+            end if
         end do
         call sort_results()
         ratio_cut = floor(de_ratio * population)
+        
         do i = 1, population
+            write(*, *) "de_struct: ", i
+            write(*, *) "atom_type: ", (pstruct(i) % ptype(k), k = 1, pstruct(i) % natom)
             if(i > ratio_cut) then
-                call init_struct_sym(i)
+                call init_struct_tot(i)
                 continue
             end if
             do
@@ -104,9 +114,9 @@ module differencial_evolution
                 b = floor(tmp * ratio_cut + 1)
                 if(b /= i .and. b /= a) exit
             end do
-            call kmatch(pool(1), pstruct(i))
-            call kmatch(pool(1), pool(a))
-            call kmatch(pool(1), pool(b))
+            !call kmatch(pool(1), pstruct(i))
+            !call kmatch(pool(1), pool(a))
+            !call kmatch(pool(1), pool(b))
             do j = 1, pstruct(i) % natom
                 pbest(:) = pool(1) % pos(:, j)
                 p1(:) = pool(i) % pos(:, j)
@@ -118,7 +128,24 @@ module differencial_evolution
             end do
             call check(i, flag)
             if (flag .eqv. .false.) then
-                call init_struct_sym(i)
+                call init_struct_tot(i)                
+            end if
+            ! for quasi-2D case
+            ! to keep the vacuum_layer after DE operations
+            if(Q2D) then
+                min_z = 1.0
+                max_z = 0.0
+                do j = 1, pstruct(i) % natom
+                    if(min_z > pstruct(i) % pos(3, j)) min_z = pstruct(i) % pos(3, j)
+                    if(max_z < pstruct(i) % pos(3, j)) max_z = pstruct(i) % pos(3, j)
+                end do
+                c1 = (1.0 - (max_z - min_z)) * pstruct(i) % lat(3, 3)
+                c2 = (max_z - min_z) * pstruct(i) % lat(3, 3) + vacuum_layer
+                ratio = c1 / c2
+                do j = 1, pstruct(i) % natom
+                    pstruct(i) % pos(3, j) = pstruct(i) % pos(3, j) * ratio
+                end do
+                pstruct(i) % lat(3, 3) = c2
             end if
         end do
     end subroutine run_de_vasp
@@ -148,6 +175,7 @@ module differencial_evolution
                 end do
             end do
         end do
+        
         
         flag = .true.
         do i = 1, n

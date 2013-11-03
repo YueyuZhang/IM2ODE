@@ -4,9 +4,9 @@
 !
 ! Created on 2013年4月21日, 上午1:25
 !
-
+    
 module init_struct
-    contains
+    contains        
     subroutine init_struct_nosym()
         use kinds
         use parameters, only : struct_info
@@ -30,37 +30,167 @@ module init_struct
     
     subroutine fill_atom(i)
         use kinds
+        use constants, only : pi
         use parameters, only : pstruct, atom_dis
+        use parameters, only : cluster, init_radius, cluster_ctr_x, cluster_ctr_y, cluster_ctr_z
         implicit none
         integer(i4b), intent(in) :: i
         integer(i4b) :: a1, a2, i1, j, k
-        real(dp) :: pos_car(3), pos_dir(3), pos_tmp(3), lattice(3,3), distance
+        real(dp) :: pos_car(3), pos_dir(3), pos_tmp(3), pos_tmp_car(3), lattice(3,3), pos_bak(3)
+        real(dp) :: distance, distance_tot, distance_max
+        real(dp) :: r, theta, phi
         logical :: flag
+        distance_max = 0.0
         lattice = pstruct(i) % lat
         do j = 1, pstruct(i) % natom
             flag = .true.
             i1 = 1
+            distance_max = 0.0
             do
+                flag = .true.
                 i1 = i1 + 1
                 do k = 1, 3
                     call random_number(pos_dir(k))
                 end do
+                if(cluster) then
+                    call random_number(r)
+                    call random_number(theta)
+                    call random_number(phi)
+                    r = r * init_radius
+                    theta = theta * 2.0 * pi
+                    phi = phi * pi
+                    pos_car(1) = r * sin(phi) * cos(theta)
+                    pos_car(2) = r * sin(phi) * sin(theta)
+                    pos_car(3) = r * cos(phi)
+                    call car2dir(lattice, pos_car, pos_dir)
+                    pos_dir(1) = pos_dir(1) + cluster_ctr_x
+                    pos_dir(2) = pos_dir(2) + cluster_ctr_y
+                    pos_dir(3) = pos_dir(3) + cluster_ctr_z
+                end if
                 pos_car = pos_dir
                 call dir2car(lattice, pos_dir, pos_car)
+                distance_tot = 1e5
                 do k = 1, j - 1
                     pos_tmp = pstruct(i) % pos(:, k)
-                    call find_dis(lattice, pos_car, pos_tmp, distance)
+                    call dir2car(lattice, pos_tmp, pos_tmp_car)
+                    call find_dis(lattice, pos_car, pos_tmp_car, distance)
                     a1 = pstruct(i) % ptype(k)
                     a2 = pstruct(i) % ptype(j)
                     if(distance < atom_dis(a1,a2)) then
                         flag = .false.
-                    end if
+                        if(.not. flag .and. distance < distance_tot) distance_tot = distance
+                    end if    
                 end do
-                if(flag .or. i1 > 1000) exit
+                if(.not. flag .and. distance_tot > distance_max) then
+                    distance_max = distance_tot
+                    pos_bak = pos_dir
+                end if
+                if(flag .or. i1 > 50000) then
+                    !if(i1 > 5000) write(*, *) "too small radius"
+                    if(i1 > 50000) then
+                        pos_dir = pos_bak
+                    end if
+                    exit
+                end if
             end do
-            pstruct(i) % pos(:,j) = pos_car
+            pstruct(i) % pos(:,j) = pos_dir
         end do
     end subroutine fill_atom
+    
+    subroutine fill_atom_cluster_substrate(i)
+        use kinds
+        use constants, only : pi
+        use parameters, only : pstruct, atom_dis
+        use parameters, only : cluster, init_radius, cluster_ctr_x, cluster_ctr_y, cluster_ctr_z
+        use parameters, only : cluster_substrate, substrate
+        implicit none
+        integer(i4b), intent(in) :: i
+        integer(i4b) :: a1, a2, i1, j, k
+        real(dp) :: pos_car(3), pos_dir(3), pos_tmp(3), pos_tmp_car(3), lattice(3,3), pos_bak(3)
+        real(dp) :: distance, distance_tot, distance_max, top_substrate
+        real(dp) :: r, theta, phi
+        logical :: flag
+        distance_max = 0.0
+        top_substrate = 0.0
+        lattice = pstruct(i) % lat
+        write(*, *) "fill substrate"
+        do j = 1, pstruct(i) % natom
+            if(substrate % ptype(j) /= -1) then
+                pstruct(i) % pos(:, j) = substrate % pos(:, j)
+                write(*, *) pstruct(i) % pos(:, j)
+                if(substrate % pos(3, j) > top_substrate) then
+                    top_substrate = substrate % pos(3, j)
+                end if
+            end if
+        end do
+        do j = 1, pstruct(i) % natom
+            if(substrate % ptype(j) == -1) then
+                flag = .true.
+                i1 = 1
+                distance_max = 0.0
+                do
+                    flag = .true.
+                    i1 = i1 + 1
+                    call random_number(r)
+                    call random_number(theta)
+                    call random_number(phi)
+                    r = r * init_radius
+                    theta = theta * 2.0 * pi
+                    phi = phi * pi
+                    pos_car(1) = r * sin(phi) * cos(theta)
+                    pos_car(2) = r * sin(phi) * sin(theta)
+                    pos_car(3) = r * cos(phi)
+                    call car2dir(lattice, pos_car, pos_dir)
+                    pos_dir(1) = pos_dir(1) + cluster_ctr_x
+                    pos_dir(2) = pos_dir(2) + cluster_ctr_y
+                    pos_dir(3) = pos_dir(3) + cluster_ctr_z
+                    if(pos_dir(3) < top_substrate) then
+                        flag = .false.
+                    end if
+                    pos_car = pos_dir
+                    call dir2car(lattice, pos_dir, pos_car)
+                    distance_tot = 1e5
+                    do k = 1, j - 1
+                        pos_tmp = pstruct(i) % pos(:, k)
+                        call dir2car(lattice, pos_tmp, pos_tmp_car)
+                        call find_dis(lattice, pos_car, pos_tmp_car, distance)
+                        a1 = pstruct(i) % ptype(k)
+                        a2 = pstruct(i) % ptype(j)
+                        if(distance < atom_dis(a1,a2)) then
+                            flag = .false.
+                            if(.not. flag .and. distance < distance_tot) distance_tot = distance
+                        end if    
+                    end do
+                    do k = j + 1, pstruct(i) % natom
+                        if(substrate % ptype(k) /= -1) then
+                            pos_tmp = substrate % pos(:, k)
+                            call dir2car(lattice, pos_tmp, pos_tmp_car)
+                            call find_dis(lattice, pos_car, pos_tmp_car, distance)
+                            a1 = pstruct(i) % ptype(k)
+                            a2 = pstruct(i) % ptype(j)
+                            if(distance < atom_dis(a1,a2)) then
+                                flag = .false.
+                                if(.not. flag .and. distance < distance_tot) distance_tot = distance
+                            end if
+                        end if
+                    end do
+                    if(.not. flag .and. distance_tot > distance_max) then
+                        distance_max = distance_tot
+                        pos_bak = pos_dir
+                    end if
+                    if(flag .or. i1 > 50000) then
+                        !if(i1 > 5000) write(*, *) "too small radius"
+                        if(i1 > 50000) then
+                            pos_dir = pos_bak
+                        end if
+                        exit
+                    end if
+                end do
+                pstruct(i) % pos(:,j) = pos_dir
+            end if
+        end do
+    end subroutine fill_atom_cluster_substrate
+            
     
     subroutine dir2car(lat, pos_old, pos_new)
         use kinds
@@ -80,6 +210,36 @@ module init_struct
         end do
         pos_new = posx
     end subroutine dir2car
+    
+    subroutine car2dir(lat, car, dir)
+        use kinds
+        implicit none
+        real(dp), intent(in) :: lat(3, 3), car(3)
+        real(dp), intent(out) :: dir(3)
+        integer(i4b) :: n, i, j, k
+        real(dp) :: maxp, tmp, aa(3, 3)
+        n = 3
+        dir(:) = car(:)
+        aa = lat
+        do k = 1, n
+          maxp = lat(k, k)
+          do j = k + 1, n
+            aa(k, j) = aa(k, j) / maxp
+            do i = k + 1, n
+              aa(i, j) = aa(i, j) - aa(i, k) * aa(k, j)
+            end do
+          end do
+          dir(k) = dir(k) / maxp
+          do i = k + 1, n
+            dir(i) = dir(i) - dir(k) * aa(i, k)
+          end do
+        end do
+        do i = n, 1, -1
+          do j = i + 1, n
+            dir(i) = dir(i) - aa(i, j) * dir(j)
+          end do
+        end do
+    end subroutine car2dir
                 
     subroutine find_dis(lat, pos1, pos2, dist)
         use kinds
@@ -94,6 +254,39 @@ module init_struct
         end do
         dist = sqrt(cnt)
     end subroutine find_dis
+    
+    subroutine init_struct_cluster(i)
+        use kinds
+        use parameters, only: struct_info
+        use parameters, only: pstruct, population,num_species, num_ele, atom_dis
+        use parameters, only: cluster_substrate
+        use lattice_mod, only: init_lat_sym
+        implicit none
+        integer(i4b), intent(in) :: i
+        integer(i4b) :: j,k,i1
+        pstruct(i) % ntyp = num_species
+        pstruct(i) % nelement = num_ele
+        pstruct(i) % natom = sum(num_ele)
+        i1 = 0
+        do j = 1, num_species
+            do k = 1, num_ele(j)
+                i1 = i1 + 1
+                pstruct(i) % ptype(i1) = j
+            end do
+        end do
+        call init_lat_sym(i)
+        write(*, *) pstruct(i) % lat
+        if(cluster_substrate) then
+            call fill_atom_cluster_substrate(i)
+        else
+            call fill_atom(i)
+        end if
+        do j = 1, pstruct(i) % natom
+            write(*, *) pstruct(i) % pos(:, j)
+        end do
+        write(*, *) "atom_type: ", (pstruct(i) % ptype(k), k = 1, pstruct(i) % natom)
+    end subroutine init_struct_cluster
+    
 end module init_struct
         
 module init_struct_spg
@@ -105,6 +298,7 @@ module init_struct_spg
     subroutine fill_atom_spg(tag, flag)
         use kinds
         use parameters, only : pstruct, atom_dis
+        use parameters, only : Q2D
         use init_struct
         use spacegroup_data, only : spg_opr, spg_ctl, spg_x, spg_y, spg_z, spg_add, spg_pro
         implicit none
@@ -128,6 +322,18 @@ module init_struct_spg
             end do
         end do
         
+        if(Q2D) then
+            dnum = 0
+            do i = -1, 1
+                do j = -1, 1
+                    dnum = dnum + 1
+                    dx(dnum) = i
+                    dy(dnum) = j
+                    dz(dnum) = 0
+                end do
+            end do
+        end if
+           
         spg_index = pstruct(tag) % spg_idx
         lattice = pstruct(tag) % lat
         ptyp = pstruct(tag) % ntyp
@@ -208,7 +414,7 @@ module init_struct_spg
                             do k = 1, spg_ctl(i, spg_index)
                                 do p = 1, patom + iatom
                                     pos_tmp(:) = pstruct(tag) % pos(:, p)
-                                    do q = 1, 27
+                                    do q = 1, dnum
                                         pos_dir(1) = x(k) + dx(q)
                                         pos_dir(2) = y(k) + dy(q)
                                         pos_dir(3) = z(k) + dz(q)
@@ -226,7 +432,7 @@ module init_struct_spg
                                     pos_tmp(1) = x(p)
                                     pos_tmp(2) = y(p)
                                     pos_tmp(3) = z(p)
-                                    do q = 1, 27
+                                    do q = 1, dnum
                                         pos_dir(1) = x(k) + dx(q)
                                         pos_dir(2) = y(k) + dy(q)
                                         pos_dir(3) = z(k) + dz(q)
@@ -335,7 +541,7 @@ module init_struct_spg
             c2 = vacuum_layer + c1
             ratio = c1 / c2
             do j = 1, pstruct(i) % natom
-                pstruct(i) % pos(3, j) = pstruct(i) % pos(3, j) * ratio
+                pstruct(i) % pos(3, j) = pstruct(i) % pos(3, j) * ratio + 0.5
             end do
             pstruct(i) % lat(3, 3) = c2
         end if
@@ -343,3 +549,23 @@ module init_struct_spg
     
 end module init_struct_spg
 
+
+
+
+
+module init_struct_all
+    contains
+    subroutine init_struct_tot(i)
+        use kinds
+        use parameters, only : cluster, cluster_substrate
+        use init_struct_spg, only : init_struct_sym
+        use init_struct, only : init_struct_cluster
+        implicit none
+        integer(i4b), intent(in) :: i
+        if(cluster) then
+            call init_struct_cluster(i)
+        else
+            call init_struct_sym(i)
+        end if
+    end subroutine init_struct_tot
+end module init_struct_all

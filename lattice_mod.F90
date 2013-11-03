@@ -12,6 +12,7 @@ module lattice_mod
         use constants, only : pi
         use parameters, only : population, pstruct, volumn
         use parameters, only : fix_lat, fix_a, fix_b, fix_c, fix_alpha, fix_beta, fix_gama
+        use parameters, only : Q2D
         implicit none
         integer(i4b), intent(in) :: i
         real(dp) :: a,b,c, alph, beta, gama, ratio, vtmp
@@ -42,6 +43,10 @@ module lattice_mod
             if(gama < 10.0 / 180.0 * pi) f1 = .false.
             if(f1) exit
         end do
+        if(Q2D) then
+            gama = pi / 2.0
+            beta = pi / 2.0
+        end if
         if(fix_lat) then
             a = fix_a
             b = fix_b
@@ -59,6 +64,7 @@ module lattice_mod
         call vec2mat(vec, lat_tmp)
         call get_volumn(lat_tmp, vtmp)
         ratio = (volumn / vtmp) ** 0.33333333
+        if(fix_lat) ratio = 1.0
         vec(1) = a * ratio
         vec(2) = b * ratio
         vec(3) = c * ratio
@@ -100,6 +106,7 @@ module lattice_mod
         use parameters, only : spg_index, spacegroup_log
         use parameters, only : spg_front, spg_rear
         use parameters, only : fix_lat, fix_a, fix_b, fix_c, fix_alpha, fix_beta, fix_gama
+        use parameters, only : Q2D
         implicit none
         integer(i4b), intent(in) :: i
         real(dp) :: a,b,c, alph, beta, gama, ratio, vtmp
@@ -183,14 +190,18 @@ module lattice_mod
             beta = beta * pi / 2.0
             gama = gama * pi / 2.0
             f1 = .true.
-            if(a / b < 0.2 .or. a / b > 5.0) f1 = .false.
-            if(a / c < 0.2 .or. a / c > 5.0) f1 = .false.
-            if(b / c < 0.2 .or. b / c > 5.0) f1 = .false.
-            if(alph < 10.0 / 180.0 * pi) f1 = .false.
-            if(beta < 10.0 / 180.0 * pi) f1 = .false.
-            if(gama < 10.0 / 180.0 * pi) f1 = .false.
+            if(a / b < 0.333333 .or. a / b > 3.0) f1 = .false.
+            if(a / c < 0.333333 .or. a / c > 3.0) f1 = .false.
+            if(b / c < 0.333333 .or. b / c > 3.0) f1 = .false.
+            if(alph < (20.0 / 180.0 * pi) .or. alph > (160.0 / 180.0 * pi)) f1 = .false.
+            if(beta < (20.0 / 180.0 * pi) .or. beta > (160.0 / 180.0 * pi)) f1 = .false.
+            if(gama < (20.0 / 180.0 * pi) .or. gama > (160.0 / 180.0 * pi)) f1 = .false.
             if(f1) exit
         end do
+        if(Q2D) then
+            gama = pi / 2.0
+            beta = pi / 2.0
+        end if
         if(fix_lat) then
             a = fix_a
             b = fix_b
@@ -215,6 +226,7 @@ module lattice_mod
         vec(3) = c * ratio
         call vec2mat(vec, lat_tmp)
         pstruct(i)%lat = lat_tmp
+        !write(*, *)"in lat_mod: ", lat_tmp
     end subroutine init_lat_sym
 end module lattice_mod
     

@@ -6,9 +6,13 @@
 !
 
 module init_mod
+    use kinds
     use parameters, only : spacegroup_log
     use spacegroup_data, only : init_spg
+    use parameters, only : cluster_substrate
+    use de_tools, only : read_init_struct
     implicit none
+    integer(i4b) :: flag
     contains
     subroutine init_run()
         use kinds
@@ -17,7 +21,7 @@ module init_mod
         integer(i4b) :: i
         real(dp) :: inf = 1e8
         call init_rand()
-        call system("rm -f results")
+        call system("rm -rf results")
         call system("mkdir results")
         open(1224,file="results/run_de.out")
         write(1224, *) "start de searching ......"
@@ -33,6 +37,15 @@ module init_mod
         end do
         
         call init_spg
+        
+        if(cluster_substrate) then
+            call read_init_struct(flag)
+            if(flag == 0) then
+                write(1224, *) "Error: wrong format if input structure"
+                stop
+            end if
+        end if
+        
     end subroutine init_run
     
     subroutine init_rand()
@@ -55,7 +68,11 @@ module init_mod
         use parameters, only : mode, hardness, rcut, ionicity
         use parameters, only : ESflag, ES_mod, ES_Eg, Es_opt
         use parameters, only : fix_lat, fix_a, fix_b, fix_c, fix_alpha, fix_beta, fix_gama
-        use parameters, only : Q2D, vacuum_layer
+        use parameters, only : Q2D, vacuum_layer, Area
+        use parameters, only : find_defect, defect_type, center_x, center_y, center_z, defect_radius, length_x, length_y, length_z
+        use parameters, only : PRESSURE, PSTRESS
+        use parameters, only : cluster, init_radius, cluster_substrate, SubstrateElements
+        use parameters, only : cluster_ctr_x, cluster_ctr_y, cluster_ctr_z
         use kinds
         implicit none
         
@@ -99,7 +116,7 @@ module init_mod
         call find(nametag, 'SystemName', i)
         if(i == 0) then
             write(1224, *) "Input SystemName"
-            sys_name = "zyy"
+            sys_name = "DE-search"
         else
             read(number(i), *) sys_name
         end if
@@ -263,6 +280,66 @@ module init_mod
             else
                 read(number(i), *) vacuum_layer
             end if
+            
+            call find(nametag, "Area", i)
+            if(i == 0) then
+                Area = 100.0
+            else
+                read(number(i), *) Area
+            end if
+        end if
+        
+        call find(nametag, "cluster", i)
+        if(i == 0) then
+            cluster = .false.
+        else
+            read(number(i), *) cluster
+            
+            call find(nametag, "init_radius", i)
+            if(i == 0) then
+                write(1224, *) "Input init_radius"
+                init_radius = 2.5
+            else
+                read(number(i), *) init_radius
+            end if
+            
+            call find(nametag, "cluster_ctr_x", i)
+            if(i == 0) then
+                write(1224, *) "Input center of cluster"
+                cluster_ctr_x = 0.5
+            else
+                read(number(i), *) cluster_ctr_x
+            end if
+            
+            call find(nametag, "cluster_ctr_y", i)
+            if(i == 0) then
+                write(1224, *) "Input center of cluster"
+                cluster_ctr_y = 0.5
+            else
+                read(number(i), *) cluster_ctr_y
+            end if
+            
+            call find(nametag, "cluster_ctr_z", i)
+            if(i == 0) then
+                write(1224, *) "Input center of cluster"
+                cluster_ctr_z = 0.5
+            else
+                read(number(i), *) cluster_ctr_z
+            end if
+            
+            call find(nametag, "cluster_substrate", i)
+            if(i == 0) then
+                cluster_substrate = .false.
+            else
+                read(number(i), *) cluster_substrate
+                
+                call find(nametag, "SubstrateElements", i)
+                if(i == 0) then
+                    write(1224, *) "Input SubstrateElements"
+                else
+                    read(number(i), *) (SubstrateElements(j), j = 1, num_species)
+                end if
+            end if
         end if
         
         call find(nametag, "fix_lat", i)
@@ -320,6 +397,88 @@ module init_mod
             end if
         end if
         
+        call find(nametag, "PSTRESS", i)
+        if(i == 0) then
+            PRESSURE = .false.
+        else
+            PRESSURE = .true.
+            read(number(i), *) PSTRESS
+        end if
+        
+        call find(nametag, "find_defect", i)
+        if(i == 0) then
+            find_defect = .false.
+        else
+            read(number(i), *) find_defect
+            
+            call find(nametag, "defect_type", i)
+            if(i == 0) then
+                write(1224, *) "Input defect_type"
+                defect_type = 1
+            else
+                read(number(i), *) defect_type
+            end if
+            
+            call find(nametag, "center_x", i)
+            if(i == 0) then
+                write(1224, *) "Input center_x"
+                center_x = 1.0
+            else
+                read(number(i), *) center_x
+            end if
+            
+            call find(nametag, "center_y", i)
+            if(i == 0) then
+                write(1224, *) "Input center_y"
+                center_y = 1.0
+            else
+                read(number(i), *) center_y
+            end if
+            
+            call find(nametag, "center_z", i)
+            if(i == 0) then
+                write(1224, *) "Input center_z"
+                center_z = 1.0
+            else
+                read(number(i), *) center_z
+            end if
+            
+            if(defect_type == 1) then
+                call find(nametag, "length_x", i)
+                if(i == 0) then
+                    write(1224, *) "Input length_x"
+                    length_x = 1.0
+                else
+                    read(number(i), *) length_x
+                end if
+                
+                call find(nametag, "length_y", i)
+                if(i == 0) then
+                    write(1224, *) "Input length_y"
+                    length_y = 1.0
+                else
+                    read(number(i), *) length_y
+                end if
+                
+                call find(nametag, "length_z", i)
+                if(i == 0) then
+                    write(1224, *) "Input length_z"
+                    length_z = 1.0
+                else
+                    read(number(i), *) length_z
+                end if
+            else
+                call find(nametag, "defect_radius", i)
+                if(i == 0) then
+                    write(1224, *) "Input defect_radius"
+                    defect_radius = 1.0
+                else
+                    read(number(i), *) defect_radius
+                end if
+            end if
+            
+        end if
+        
     end subroutine read_input
     
     subroutine find(a, b, i)
@@ -356,16 +515,38 @@ module init_mod
         write(1224, *) "De_ratio: ", de_ratio
         write(1224, *) "Symmetry: ", symmetry
         write(1224, *) "Q2D: ", Q2D
-        if(Q2D) write(1224, *) "vacuum_layer: ", vacuum_layer
+        if(Q2D) then
+            write(1224, *) "vacuum_layer: ", vacuum_layer
+            write(1224, *) "Area: ", Area
+        end if
         write(1224, *) "Multi-objective: ", mode
+        write(1224, *) "cluster: ", cluster
+        if(cluster) then
+            write(1224, *) "init_radius: ", init_radius
+            write(1224, *) "cluster_ctr_x: ", cluster_ctr_x
+            write(1224, *) "cluster_ctr_y: ", cluster_ctr_y
+            write(1224, *) "cluster_ctr_z: ", cluster_ctr_z
+            write(1224, *) "cluster_substrate: ", cluster_substrate
+            if(cluster_substrate) then
+                write(1224, *) "SubstrateElements: ", (SubstrateElements(i), i = 1, num_species)
+            end if
+        end if
         write(1224, *) "fix_lat: ", fix_lat
         if(fix_lat) then
-            write(1224, *) "fix_a", fix_a
-            write(1224, *) "fix_b", fix_b
-            write(1224, *) "fix_c", fix_c
-            write(1224, *) "fix_alpha", fix_alpha
-            write(1224, *) "fix_beta", fix_beta
-            write(1224, *) "fix_gama", fix_gama
+            write(1224, *) "fix_a: ", fix_a
+            write(1224, *) "fix_b: ", fix_b
+            write(1224, *) "fix_c: ", fix_c
+            write(1224, *) "fix_alpha: ", fix_alpha
+            write(1224, *) "fix_beta: ", fix_beta
+            write(1224, *) "fix_gama: ", fix_gama
+        end if
+        if(PRESSURE) then
+            write(1224, *) "PSTRESS: ", PSTRESS
+        end if
+        write(1224, *) "find_defect: ", find_defect
+        if(find_defect) then
+            write(1224, *) "defect_type: ", defect_type
+            write(1224, *) "center: ", center_x, center_y, center_z
         end if
         write(1224, *) "---end write input---"
     end subroutine write_input

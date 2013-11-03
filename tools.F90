@@ -111,6 +111,8 @@ module de_tools
     subroutine read_vasp(tag)
         use kinds
         use parameters, only : pstruct, ESflag
+        use parameters, only : PRESSURE, PSTRESS
+        use lattice_mod, only : get_volumn
         use constants, only: max_atom, max_type
         use Elec_Str_mod, only : ES_gap
         implicit none
@@ -118,7 +120,7 @@ module de_tools
         integer(i4b) :: i,j,k,natom,lth, f1
         real(dp) :: inf = 1e5
         real(dp) :: tmp, pos(3, max_atom * max_type), lat_matrix(3,3)
-        real(dp) :: energy
+        real(dp) :: energy, VOL
         character(len=200) :: strin
         character(len=40) :: nametag, number
         logical :: alive
@@ -209,6 +211,10 @@ module de_tools
                 end if
             end if
         end do
+        if(PRESSURE) then
+            call get_volumn(lat_matrix, VOL)
+            energy = energy + 0.00625 * PSTRESS * VOL
+        end if
         pstruct(tag) % energy = energy
         write(*, *) tag, "energy", energy
         close(4312)
@@ -217,6 +223,102 @@ module de_tools
             call ES_gap(tag)
         end if
     end subroutine read_vasp
+    
+    subroutine read_init_struct(flag)
+        use kinds
+        use constants, only : max_atom, max_type
+        use parameters, only : struct_info, substrate
+        use parameters, only : num_species, num_ele, SubstrateElements
+        implicit none
+        integer(i4b), intent(out) :: flag
+        integer(i4b) :: i, i1, j, k, f1, natom
+        real(dp) :: tmp, pos(3, max_atom * max_type), lat_matrix(3,3)
+        logical :: alive
+        inquire(file = "struct.in", exist = alive)
+        if(alive) then
+            open(5311, file = "struct.in", status = "old")
+        else
+            write(1224, *) "no struct.in"
+            flag = 0
+            return
+        end if
+        read(5311, *, iostat = f1)
+        if(f1 /= 0) then
+            flag = 0
+            close(5311)
+            return
+        end if
+        read(5311, *, iostat = f1) tmp
+        if(f1 /= 0) then
+            flag = 0
+            close(5311)
+            return
+        end if
+        do i = 1, 3
+            read(5311, *, iostat = f1)(lat_matrix(i,j), j = 1, 3)
+            if(f1 /= 0) then
+                flag = 0
+                close(5311)
+                return
+            end if
+        end do
+        lat_matrix(:, :) = tmp * lat_matrix(:, :)
+        read(5311, *, iostat = f1)
+        if(f1 /= 0) then
+            flag = 0
+            close(5311)
+            return
+        end if
+        read(5311, *, iostat = f1)
+        if(f1 /= 0) then
+            flag = 0
+            close(5311)
+            return
+        end if
+        read(5311, *, iostat = f1)
+        if(f1 /= 0) then
+            flag = 0
+            close(5311)
+            return
+        end if
+        substrate % ntyp = num_species
+        substrate % nelement = num_ele
+        substrate % natom = sum(num_ele)
+        i1 = 0
+        do i = 1, num_species
+            do j = 1, num_ele(i)
+                i1 = i1 + 1
+                if(j <= SubstrateElements(i)) then
+                    substrate % ptype(i1) = i
+                else
+                    substrate % ptype(i1) = -1
+                end if
+            end do
+        end do
+        natom = substrate % natom
+        do i = 1, natom
+            if(substrate % ptype(i) /= -1) then
+                read(5311, *, iostat = f1) (pos(j, i), j = 1, 3)
+                if(f1 /= 0) then
+                    flag = 0
+                    close(5311)
+                    return
+                end if
+                pos(1, i) = pos(1, i) - floor(pos(1, i))
+                pos(2, i) = pos(2, i) - floor(pos(2, i))
+                pos(3, i) = pos(3, i) - floor(pos(3, i))
+            end if
+        end do
+        close(5311)
+        write(*, *)"end read substrate"
+        substrate % lat = lat_matrix
+        write(*, *) lat_matrix
+        substrate % pos = pos
+        do i = 1, substrate % natom
+            write(*, *) substrate % pos(:, i), substrate % ptype(i)
+        end do
+        flag = 1
+    end subroutine read_init_struct
     
     subroutine bulkmodu(tag)
         use kinds, only : dp, i4b
