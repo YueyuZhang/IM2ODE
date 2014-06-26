@@ -1,0 +1,22 @@
+#!/bin/bash -x
+
+#PBS -l nodes=1:ppn=1
+#PBS -j oe
+#PBS -q q2.17
+#PBS -N lzyy
+
+#define MPI PATH
+OMPI_HOME=/home/software/mpi/openmpi1.4.2-intel
+
+# Setup the OpenMPI topology
+n_proc=$(cat $PBS_NODEFILE | wc -l)
+
+cd $PBS_O_WORKDIR
+
+EXEC=./de.x
+
+
+${EXEC} &>log.out
+
+
+exit 0

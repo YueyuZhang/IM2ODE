@@ -31,6 +31,7 @@ module de_tools
     subroutine write_vasp(tag)
         use kinds
         use parameters, only : pstruct, sys_name, name_element
+        use parameters, only : selective_dynamics
         implicit none
         integer(i4b), intent(in) :: tag
         character(len=10) :: fname
@@ -44,9 +45,14 @@ module de_tools
         end do
         write(4111,*) (name_element(i)//" ",i=1,pstruct(tag)%ntyp)
         write(4111, *) (pstruct(tag)%nelement(i), i=1,pstruct(tag)%ntyp)
+        if(selective_dynamics) write(4111, "(A18)") "Selective Dynamics"
         write(4111,"(A6)")"Direct"
         do i = 1, pstruct(tag)%natom
-            write(4111, "(3F10.6)")(pstruct(tag)%pos(j, i),j=1,3)
+            if(selective_dynamics) then
+                write(4111, "(3F10.6, 3L5)") (pstruct(tag)%pos(j,i), j=1, 3), (pstruct(tag)%SelectiveDynamics(j,i), j = 1, 3)
+            else
+                write(4111, "(3F10.6)")(pstruct(tag)%pos(j, i),j=1,3)
+            end if
         end do
         close(4111)
     end subroutine write_vasp
@@ -55,6 +61,7 @@ module de_tools
     subroutine write_input_all(step)
         use kinds
         use parameters, only : pstruct, population, sys_name, name_element
+        use parameters, only : selective_dynamics
         implicit none
         integer(i4b), intent(in) :: step
         integer(i4b) :: tag,i,j
@@ -72,7 +79,11 @@ module de_tools
             write(4313, *) (pstruct(tag)%nelement(i), i=1,pstruct(tag)%ntyp)
             write(4313,"(A6)")"Direct"
             do i = 1, pstruct(tag)%natom
-                write(4313, "(3F10.6)")(pstruct(tag)%pos(j, i),j=1,3)
+                if(selective_dynamics) then
+                    write(4313, "(3F10.6, 3L5)") (pstruct(tag)%pos(j,i), j=1, 3), (pstruct(tag)%SelectiveDynamics(j,i), j = 1, 3)
+                else
+                    write(4313, "(3F10.6)")(pstruct(tag)%pos(j, i),j=1,3)
+                end if
             end do
         end do
         close(4313)
@@ -81,7 +92,7 @@ module de_tools
     subroutine write_vasp_all(step)
         use kinds
         use parameters, only : pstruct, population, sys_name, name_element
-        use parameters, only : mode
+        use parameters, only : mode, selective_dynamics
         implicit none
         integer(i4b), intent(in) :: step
         integer(i4b) :: tag,i,j
@@ -102,16 +113,78 @@ module de_tools
             write(4313, *) (pstruct(tag)%nelement(i), i=1,pstruct(tag)%ntyp)
             write(4313,"(A6)")"Direct"
             do i = 1, pstruct(tag)%natom
-                write(4313, "(3F10.6)")(pstruct(tag)%pos(j, i),j=1,3)
+                if(selective_dynamics) then
+                    write(4313, "(3F10.6, 3L5)") (pstruct(tag)%pos(j,i), j=1, 3), (pstruct(tag)%SelectiveDynamics(j,i), j = 1, 3)
+                else
+                    write(4313, "(3F10.6)")(pstruct(tag)%pos(j, i),j=1,3)
+                end if
             end do
         end do
         close(4313)
     end subroutine write_vasp_all
     
+    subroutine write_input_HSE_all(step)
+        use kinds
+        use parameters, only : pstruct, population, sys_name, name_element
+        implicit none
+        integer(i4b), intent(in) :: step
+        integer(i4b) :: tag,i,j
+        character(len = 20) :: fname
+        fname = "results/de_ini_HSE_"//trim(itoa(step))
+        open(5313, file=fname)
+        do tag = 1, population
+            !write(4313, *) pstruct(tag) % energy / pstruct(tag) % natom
+            write(5313, *) sys_name
+            write(5313,"(A6)")"1.0000"
+            do i = 1, 3
+                write(5313,"(3F10.6)")(pstruct(tag)%lat(i,j),j=1,3)
+            end do
+            write(5313,*) (name_element(i)//" ",i=1,pstruct(tag)%ntyp)
+            write(5313, *) (pstruct(tag)%nelement(i), i=1,pstruct(tag)%ntyp)
+            write(5313,"(A6)")"Direct"
+            do i = 1, pstruct(tag)%natom
+                write(5313, "(3F10.6)")(pstruct(tag)%pos(j, i),j=1,3)
+            end do
+        end do
+        close(5313)
+    end subroutine write_input_HSE_all
+    
+    subroutine write_vasp_HSE_all(step)
+        use kinds
+        use parameters, only : pstruct, population, sys_name, name_element
+        use parameters, only : mode
+        implicit none
+        integer(i4b), intent(in) :: step
+        integer(i4b) :: tag,i,j
+        character(len = 20) :: fname
+        fname = "results/de_opt_HSE_"//trim(itoa(step))
+        open(5313, file=fname)
+        do tag = 1, population
+            write(5313, *) pstruct(tag) % energy / pstruct(tag) % natom
+            if(mode) then
+                write(5313, *) pstruct(tag) % hardness
+            end if
+            write(5313, *) sys_name
+            write(5313,"(A6)")"1.0000"
+            do i = 1, 3
+                write(5313,"(3F10.6)")(pstruct(tag)%lat(i,j),j=1,3)
+            end do
+            write(5313,*) (name_element(i)//" ",i=1,pstruct(tag)%ntyp)
+            write(5313, *) (pstruct(tag)%nelement(i), i=1,pstruct(tag)%ntyp)
+            write(5313,"(A6)")"Direct"
+            do i = 1, pstruct(tag)%natom
+                write(5313, "(3F10.6)")(pstruct(tag)%pos(j, i),j=1,3)
+            end do
+        end do
+        close(5313)
+    end subroutine write_vasp_HSE_all
+    
     subroutine read_vasp(tag)
         use kinds
         use parameters, only : pstruct, ESflag
         use parameters, only : PRESSURE, PSTRESS
+        use parameters, only : HSE
+        use parameters, only : selective_dynamics
         use lattice_mod, only : get_volumn
         use constants, only: max_atom, max_type
         use Elec_Str_mod, only : ES_gap
@@ -124,7 +197,7 @@ module de_tools
         character(len=200) :: strin
         character(len=40) :: nametag, number
         logical :: alive
-        call system("cd vasp_"//trim(itoa(tag))//"; cp CONTCAR OUTCAR EIGENVAL OSZICAR ..;"//&
+        call system("cd vasp_"//trim(itoa(tag))//"; cp CONTCAR OUTCAR* EIGENVAL OSZICAR ..;"//&
         & "rm -rf ../Matrix_elements; (if [ -s Matrix_elements ]; then cp Matrix_elements ..; fi) ")
         inquire(file = "CONTCAR", exist = alive)
         if(alive) then
@@ -173,9 +246,21 @@ module de_tools
             close(4311)
             return
         end if
+        if(selective_dynamics) then
+            read(4311, *, iostat = f1)
+            if(f1 /= 0) then
+                pstruct(tag) % energy = inf
+                close(4311)
+                return
+            end if
+        end if
         natom = pstruct(tag) % natom
         do i = 1, natom
-            read(4311, *, iostat = f1) (pos(j,i), j = 1, 3)
+            if(selective_dynamics) then
+                read(4311, *, iostat = f1) (pos(j,i), j = 1, 3), (pstruct(tag)%SelectiveDynamics(j,i), j = 1, 3)
+            else
+                read(4311, *, iostat = f1) (pos(j,i), j = 1, 3)
+            end if
             if(f1 /= 0) then
             pstruct(tag) % energy = inf
                 close(4311)
@@ -190,14 +275,26 @@ module de_tools
         pstruct(tag) % pos = pos
         
         energy = inf
-        inquire(file = "OUTCAR", exist = alive)
-        if(alive) then
-            open(4312, file="OUTCAR", status = "old")
-            energy = inf
+        if(HSE) then
+            inquire(file = "OUTCAR.old", exist = alive)
+            if(alive) then
+                open(4312, file="OUTCAR.old", status = "old")
+                energy = inf
+            else
+                write(1224, *) "no OUTCAR.old of pop (in HSE mode, OUTCAR.old should be LDA result)", tag
+                pstruct(tag) % energy = inf
+                return
+            end if
         else
-            write(1224, *) "no OUTCAR of pop ", tag
-            pstruct(tag) % energy = inf
-            return
+            inquire(file = "OUTCAR", exist = alive)
+            if(alive) then
+                open(4312, file="OUTCAR", status = "old")
+                energy = inf
+            else
+                write(1224, *) "no OUTCAR of pop ", tag
+                pstruct(tag) % energy = inf
+                return
+            end if
         end if
         do while(.true.)
             read(4312, fmt="(A200)", iostat=f1) strin
@@ -224,16 +321,188 @@ module de_tools
         end if
     end subroutine read_vasp
     
+    subroutine read_mystruct(tag, flag)
+        use kinds
+        use parameters, only : pstruct, selective_dynamics
+        implicit none
+        integer(i4b), intent(in) :: tag
+        logical, intent(out) :: flag
+        integer(i4b) :: natom,i,j,k,f1
+        real(dp) :: tmp
+        character(len=10) :: fname
+        logical :: alive
+        flag = .false.
+        fname = "mystruct"//trim(itoa(tag))
+        inquire(file = fname, exist = alive)
+        if(alive) then
+            open(4317, file = fname, status = "old")
+        else
+            write(1224, *) "no mystruct of ", tag
+            return
+        end if
+        read(4317, *, iostat = f1)
+        if(f1 /= 0) then
+            close(4317)
+            return
+        end if
+        read(4317, *, iostat = f1) tmp
+        if(f1 /= 0) then
+            close(4317)
+            return
+        end if
+        do i = 1, 3
+            read(4317, *, iostat = f1) (pstruct(tag)%lat(i, j),j=1,3)
+            if(f1 /= 0) then
+                close(4317)
+                return
+            end if
+        end do
+        pstruct(tag)%lat(:, :) = tmp * pstruct(tag)%lat(:, :)
+        read(4317, *, iostat = f1)
+        if(f1 /= 0) then
+            close(4317)
+            return
+        end if
+        read(4317, *, iostat = f1)
+        if(f1 /= 0) then
+            close(4317)
+            return
+        end if
+        read(4317, *, iostat = f1)
+        if(f1 /= 0) then
+            close(4317)
+            return
+        end if
+        if(selective_dynamics) then
+            read(4317, *, iostat = f1)
+            if(f1 /= 0) then
+                close(4317)
+                return
+            end if
+        end if
+        natom = pstruct(tag) % natom
+        do i = 1, natom
+            if(selective_dynamics) then
+                read(4317, *, iostat = f1) (pstruct(tag)%pos(j,i), j = 1, 3), (pstruct(tag)%SelectiveDynamics(j, i), j = 1, 3)
+            else
+                read(4317, *, iostat = f1) (pstruct(tag)%pos(j,i), j = 1, 3)
+            end if
+            if(f1 /= 0) then
+                close(4317)
+                return
+            end if
+        end do
+        close(4317)
+        flag = .true.
+    end subroutine read_mystruct
+        
+    subroutine read_vasp_Pickup(step, flag)
+        use kinds
+        use parameters, only : pstruct, population, num_ele, pool
+        use parameters, only : mode, selective_dynamics
+        implicit none
+        integer(i4b), intent(in) :: step
+        logical, intent(out) :: flag
+        integer(i4b) :: tag, i, j, f1
+        character(len=20) :: fname, tmp
+        logical :: alive
+        flag = .false.
+        fname = "results/de_opt_"//trim(itoa(step))
+        inquire(file = fname, exist = alive)
+        if(alive) then
+            open(4315, file=fname)
+        else
+            write(1224, *) "no input file for Pickup, start IM2ODE normally"
+            return
+        end if
+        write(*, *) "In Pickup"
+        do tag = 1, population
+            write(*, *) "pickup str: ", tag
+            read(4315, *, iostat = f1) pstruct(tag) % energy
+            if(f1 /= 0) then
+                close(4315)
+                return
+            end if
+            write(*, *) pstruct(tag) % energy
+            pstruct(tag) % energy = pstruct(tag) % energy * pstruct(tag) % natom
+            if(mode) then
+                read(4315, *, iostat = f1) pstruct(tag) % hardness
+                if(f1 /= 0) then
+                    close(4315)
+                    return
+                end if
+            end if
+            read(4315, *, iostat = f1) tmp
+            !write(*, *) tmp
+            if(f1 /= 0) then
+                close(4315)
+                return
+            end if
+            read(4315, *, iostat = f1) tmp
+            !write(*, *) tmp
+            if(f1 /= 0) then
+                close(4315)
+                return
+            end if
+            do i = 1, 3
+                read(4315, *, iostat = f1) (pstruct(tag) % lat(i,j), j = 1, 3)
+                if(f1 /= 0) then
+                    close(4315)
+                    return
+                end if
+            end do
+            read(4315, *, iostat = f1) tmp
+            !write(*, *) tmp
+            if(f1 /= 0) then
+                close(4315)
+                return
+            end if
+            read(4315, *, iostat = f1) tmp
+            !write(*, *) tmp
+            if(f1 /= 0) then
+                close(4315)
+                return
+            end if
+            read(4315, *, iostat = f1) tmp
+            !write(*, *) tmp
+            if(f1 /= 0) then
+                close(4315)
+                return
+            end if
+            pstruct(tag) % natom = sum(num_ele)
+            write(*, *) "natom= ", pstruct(tag)%natom
+            do i = 1, pstruct(tag)%natom
+                if(selective_dynamics) then
+                    read(4315, *, iostat = f1) (pstruct(tag)%pos(j,i), j=1, 3), (pstruct(tag)%SelectiveDynamics(j,i), j = 1, 3)
+                else
+                    read(4315, *, iostat = f1) (pstruct(tag)%pos(j, i),j=1,3)
+                end if
+                if(f1 /= 0) then
+                    close(4315)
+                    return
+                end if
+            end do
+        end do
+        close(4315)
+        do tag = 1, population
+            pool(tag) = pstruct(tag)
+        end do
+        write(1224, *) "Pickup Succeed"
+        flag = .true.
+    end subroutine read_vasp_Pickup
+    
     subroutine read_init_struct(flag)
         use kinds
         use constants, only : max_atom, max_type
         use parameters, only : struct_info, substrate
         use parameters, only : num_species, num_ele, SubstrateElements
+        use parameters, only : selective_dynamics
         implicit none
         integer(i4b), intent(out) :: flag
         integer(i4b) :: i, i1, j, k, f1, natom
         real(dp) :: tmp, pos(3, max_atom * max_type), lat_matrix(3,3)
         logical :: alive
+        logical :: SelDyn(3, max_atom * max_type)
         inquire(file = "struct.in", exist = alive)
         if(alive) then
             open(5311, file = "struct.in", status = "old")
@@ -292,35 +561,57 @@ module de_tools
                     substrate % ptype(i1) = i
                 else
                     substrate % ptype(i1) = -1
+                    SelDyn(:, i1) = .true.
                 end if
             end do
         end do
         natom = substrate % natom
-        do i = 1, natom
-            if(substrate % ptype(i) /= -1) then
-                read(5311, *, iostat = f1) (pos(j, i), j = 1, 3)
-                if(f1 /= 0) then
-                    flag = 0
-                    close(5311)
-                    return
+        if(selective_dynamics) then
+            do i = 1, natom
+                if(substrate % ptype(i) /= -1) then
+                    read(5311, *, iostat = f1) (pos(j, i), j = 1, 3), (SelDyn(j, i), j = 1, 3)
+                    if(f1 /= 0) then
+                        flag = 0
+                        close(5311)
+                        return
+                    end if
+                    pos(1, i) = pos(1, i) - floor(pos(1, i))
+                    pos(2, i) = pos(2, i) - floor(pos(2, i))
+                    pos(3, i) = pos(3, i) - floor(pos(3, i))
                 end if
-                pos(1, i) = pos(1, i) - floor(pos(1, i))
-                pos(2, i) = pos(2, i) - floor(pos(2, i))
-                pos(3, i) = pos(3, i) - floor(pos(3, i))
-            end if
-        end do
+            end do
+        else
+            do i = 1, natom
+                if(substrate % ptype(i) /= -1) then
+                    read(5311, *, iostat = f1) (pos(j, i), j = 1, 3)
+                    if(f1 /= 0) then
+                        flag = 0
+                        close(5311)
+                        return
+                    end if
+                    pos(1, i) = pos(1, i) - floor(pos(1, i))
+                    pos(2, i) = pos(2, i) - floor(pos(2, i))
+                    pos(3, i) = pos(3, i) - floor(pos(3, i))
+                end if
+            end do
+        end if
         close(5311)
         write(*, *)"end read substrate"
         substrate % lat = lat_matrix
         write(*, *) lat_matrix
         substrate % pos = pos
+        substrate % SelectiveDynamics = SelDyn
         do i = 1, substrate % natom
-            write(*, *) substrate % pos(:, i), substrate % ptype(i)
+            write(*, *) substrate % pos(:, i), substrate % ptype(i), substrate % SelectiveDynamics(:, i)
         end do
         flag = 1
     end subroutine read_init_struct
     
     subroutine bulkmodu(tag)
+        !
+        ! calculate bulk modulus
+        ! Ref. material science and engineering A209 1996 1-4
+        !
         use kinds, only : dp, i4b
         use parameters, only : pstruct, rcut, ionicity
         use constants

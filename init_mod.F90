@@ -7,9 +7,9 @@
 
 module init_mod
     use kinds
-    use parameters, only : spacegroup_log
+    use parameters, only : spacegroup_log, Pickup
     use spacegroup_data, only : init_spg
-    use parameters, only : cluster_substrate
+    use parameters, only : cluster_substrate, find_defect
     use de_tools, only : read_init_struct
     implicit none
     integer(i4b) :: flag
@@ -21,11 +21,16 @@ module init_mod
         integer(i4b) :: i
         real(dp) :: inf = 1e8
         call init_rand()
-        call system("rm -rf results")
-        call system("mkdir results")
-        open(1224,file="results/run_de.out")
-        write(1224, *) "start de searching ......"
+        open(1224,file="run_de.out")
         call read_input()
+        if(.not. Pickup) then
+            call system("rm -rf results")
+            call system("mkdir results")
+            write(1224, *) "start de searching ......"
+        else
+            write(1224, *) "======CONTINUE======="
+        end if
+        !call read_input()
         call write_input()
         spacegroup_log = 0
         
@@ -65,14 +70,23 @@ module init_mod
     subroutine read_input()
         use parameters, only : sys_name, num_species, num_ele, name_element, atom_dis, volumn
         use parameters, only : population, max_step, de_ratio, symmetry, spg_front, spg_rear
+        use parameters, only : Pickup, Pickup_step, Mystruct
         use parameters, only : mode, hardness, rcut, ionicity
         use parameters, only : ESflag, ES_mod, ES_Eg, Es_opt
+        use parameters, only : HSE, HSE_population, LDA_population, energy_cut, gap_cut
+        use parameters, only : LDA_ES_Eg, LDA_Es_opt, HSE_ES_Eg, HSE_Es_opt
         use parameters, only : fix_lat, fix_a, fix_b, fix_c, fix_alpha, fix_beta, fix_gama
-        use parameters, only : Q2D, vacuum_layer, Area
+        use parameters, only : Q2D, vacuum_layer, Area, Layer_hight
         use parameters, only : find_defect, defect_type, center_x, center_y, center_z, defect_radius, length_x, length_y, length_z
         use parameters, only : PRESSURE, PSTRESS
-        use parameters, only : cluster, init_radius, cluster_substrate, SubstrateElements
+        use parameters, only : cluster, model_ball, model_shell, model_plate
+        use parameters, only : init_radius, cluster_substrate, SubstrateElements
         use parameters, only : cluster_ctr_x, cluster_ctr_y, cluster_ctr_z
+        use parameters, only : shell_radius_in, shell_radius_out
+        use parameters, only : shell_ctr_x, shell_ctr_y, shell_ctr_z
+        use parameters, only : plate_radius, plate_height
+        use parameters, only : plate_ctr_x, plate_ctr_y, plate_ctr_z
+        use parameters, only : selective_dynamics
         use kinds
         implicit none
         
@@ -99,7 +113,7 @@ module init_mod
         n = 0
         do i = 1, line
             if(len(trim(strin(i))) == 0 .or. len(trim(strin(i))) == 1) then
-                continue
+                cycle
             else
                 read(strin(i), *) strtmp
                 if(strtmp /= '#') then
@@ -186,6 +200,31 @@ module init_mod
             read(number(i), *) de_ratio
         end if
         
+        call find(nametag, "Pickup", i)
+        if(i == 0) then
+            write(1224, *) "Input Pickup"
+            Pickup = .false.
+        else
+            read(number(i), *) Pickup
+            if(Pickup) then
+                call find(nametag, "Pickup_step", i)
+                if(i == 0) then
+                    write(1224, *) "Input Pickup_step"
+                    Pickup_step = 1
+                else
+                    read(number(i), *) Pickup_step
+                end if
+            end if
+        end if
+        
+        call find(nametag, "Mystruct", i)
+        if(i == 0) then
+            write(1224, *) "Input Mystruct"
+            Mystruct = 0
+        else
+            read(number(i), *) Mystruct
+        end if
+        
         call find(nametag, "Symmetry", i)
         if(i == 0) then
             symmetry = .false.
@@ -261,11 +300,85 @@ module init_mod
             
             call find(nametag, "ES_opt", i)
             if(i == 0) then
-                write(1224, *) "Inout ES_pot"
+                write(1224, *) "Input ES_pot"
                 ES_opt = 1.2
             else
                 read(number(i), *) ES_opt
             end if
+            
+            call find(nametag, "HSE", i)
+            if(i == 0) then
+                write(1224, *) "Input HSE"
+                HSE = .false.
+            else
+                read(number(i), *) HSE
+                
+                call find(nametag, "HSE_population", i)
+                if(i == 0) then
+                    write(1224, *) "Input HSE_population"
+                    HSE_population = 0
+                else
+                    read(number(i), *) HSE_population
+                end if
+                
+                call find(nametag, "LDA_population", i)
+                if(i == 0) then
+                    write(1224, *) "Input LDA_population"
+                    LDA_population = 6
+                else
+                    read(number(i), *) LDA_population
+                end if
+                
+                call find(nametag, "energy_cut", i)
+                if(i == 0) then
+                    write(1224, *) "Input energy_cut"
+                    energy_cut = -3
+                else
+                    read(number(i), *) energy_cut
+                end if
+                
+                call find(nametag, "gap_cut", i)
+                if(i == 0) then
+                    write(1224, *) "Input gap_cut"
+                    gap_cut = 5
+                else
+                    read(number(i), *) gap_cut
+                end if
+                
+                call find(nametag, "LDA_ES_Eg", i)
+                if(i == 0) then
+                    write(1224, *) "Input LDA_ES_Eg"
+                    LDA_ES_Eg = 0.5
+                else
+                    read(number(i), *) LDA_ES_Eg
+                end if
+                
+                call find(nametag, "LDA_Es_opt", i)
+                if(i == 0) then
+                    write(1224, *) "Input LDA_Es_opt"
+                    LDA_Es_opt = 2.0
+                else
+                    read(number(i), *) LDA_Es_opt
+                end if
+                
+                call find(nametag, "HSE_ES_Eg", i)
+                if(i == 0) then
+                    write(1224, *) "Input HSE_ES_Eg"
+                    HSE_ES_Eg = 1.4
+                else
+                    read(number(i), *) HSE_ES_Eg
+                end if
+                
+                call find(nametag, "HSE_Es_opt", i)
+                if(i == 0) then
+                    write(1224, *) "Input HSE_Es_opt"
+                    HSE_ES_opt = 3.0
+                else
+                    read(number(i), *) HSE_Es_opt
+                end if
+                
+            end if
+            
         end if
         
         call find(nametag, "Q2D", i)
@@ -287,6 +400,13 @@ module init_mod
             else
                 read(number(i), *) Area
             end if
+
+            call find(nametag, "Layer_hight", i)
+            if(i == 0) then
+                Layer_hight = 2.0
+            else
+                read(number(i), *) Layer_hight
+            end if
         end if
         
         call find(nametag, "cluster", i)
@@ -294,6 +414,14 @@ module init_mod
             cluster = .false.
         else
             read(number(i), *) cluster
+            
+            call find(nametag, "model_ball", i)
+            if(i == 0) then
+                write(1224, *) "Input model_ball"
+                model_ball = 0.5
+            else
+                read(number(i), *) model_ball
+            end if
             
             call find(nametag, "init_radius", i)
             if(i == 0) then
@@ -325,6 +453,102 @@ module init_mod
                 cluster_ctr_z = 0.5
             else
                 read(number(i), *) cluster_ctr_z
+            end if
+            
+            call find(nametag, "model_shell", i)
+            if(i == 0) then
+                write(1224, *) "Input model_shell"
+                model_shell = 0.3
+            else
+                read(number(i), *) model_shell
+            end if
+            
+            call find(nametag, "shell_radius_out", i)
+            if(i == 0) then
+                write(1224, *) "Input shell_radius_out"
+                shell_radius_out = 1.0
+            else
+                read(number(i), *) shell_radius_out
+            end if
+            
+            call find(nametag, "shell_radius_in", i)
+            if(i == 0) then
+                write(1224, *) "Input shell_radius_in"
+                shell_radius_in = 0.8
+            else
+                read(number(i), *) shell_radius_in
+            end if
+            
+            call find(nametag, "shell_ctr_x", i)
+            if(i == 0) then
+                write(1224, *) "Input shell_ctr_x"
+                shell_ctr_x = 0.5
+            else
+                read(number(i), *) shell_ctr_x
+            end if
+            
+            call find(nametag, "shell_ctr_y", i)
+            if(i == 0) then
+                write(1224, *) "Input shell_ctr_y"
+                shell_ctr_y = 0.5
+            else
+                read(number(i), *) shell_ctr_y
+            end if
+            
+            call find(nametag, "shell_ctr_z", i)
+            if(i == 0) then
+                write(1224, *) "Input shell_ctr_z"
+                shell_ctr_z = 0.5
+            else
+                read(number(i), *) shell_ctr_z
+            end if
+            
+            call find(nametag, "model_plate", i)
+            if(i == 0) then
+                write(1224, *) "Input model_plate"
+                model_plate = 0.2
+            else
+                read(number(i), *) model_plate
+            end if
+            
+            call find(nametag, "plate_radius", i)
+            if(i == 0) then
+                write(1224, *) "Input plate_radius"
+                plate_radius = 1.0
+            else
+                read(number(i), *) plate_radius
+            end if
+            
+            call find(nametag, "plate_height", i)
+            if(i == 0) then
+                write(1224, *) "Input plate_height"
+                plate_height = 0.2
+            else
+                read(number(i), *) plate_height
+            end if
+            
+            call find(nametag, "plate_ctr_x", i)
+            if(i == 0) then
+                write(1224, *) "Input plate_ctr_x"
+                plate_ctr_x = 0.5
+            else
+                read(number(i), *) plate_ctr_x
+            end if
+            
+            call find(nametag, "plate_ctr_y", i)
+            if(i == 0) then
+                write(1224, *) "Input plate_ctr_y"
+                plate_ctr_y = 0.5
+            else
+                read(number(i), *) plate_ctr_y
+            end if
+            
+            call find(nametag, "plate_ctr_z", i)
+            if(i == 0) then
+                write(1224, *) "Input plate_ctr_z"
+                plate_ctr_z = 0.5
+            else
+                read(number(i), *) plate_ctr_z
             end if
             
             call find(nametag, "cluster_substrate", i)
@@ -403,6 +627,13 @@ module init_mod
         else
             PRESSURE = .true.
             read(number(i), *) PSTRESS
+        end if
+        
+        call find(nametag, "SelectiveDynamics", i)
+        if(i == 0) then
+            selective_dynamics = .false.
+        else
+            read(number(i), *) selective_dynamics
         end if
         
         call find(nametag, "find_defect", i)
@@ -513,19 +744,63 @@ module init_mod
         write(1224, *) "Population: ", population
         write(1224, *) "MaxStep: ", max_step
         write(1224, *) "De_ratio: ", de_ratio
+        write(1224, *) "Mystruct: ", Mystruct
+        write(1224, *) "Pickup: ", Pickup
+        if(Pickup) then
+            write(1224, *) "Pickup_step: ", Pickup_step
+        end if
         write(1224, *) "Symmetry: ", symmetry
+        write(1224, *) "spg_front: ", spg_front
+        write(1224, *) "spg_rear: ", spg_rear
         write(1224, *) "Q2D: ", Q2D
         if(Q2D) then
             write(1224, *) "vacuum_layer: ", vacuum_layer
             write(1224, *) "Area: ", Area
+            write(1224, *) "Layer_hight: ", Layer_hight
         end if
         write(1224, *) "Multi-objective: ", mode
+        if(mode) then
+            write(1224, *) "hardness: ", hardness
+            if(hardness) then
+                write(1224, *) "rcut", rcut
+                write(1224, *) "ionicity", ionicity
+            end if
+            write(1224, *) "ESflag: ", ESflag
+            if(ESflag) then
+                write(1224, *) "ES_mod: ", ES_mod
+                write(1224, *) "ES_Eg: ", ES_Eg
+                write(1224, *) "ES_opt: ", ES_opt
+                if(HSE) then
+                    write(1224, *) "HSE_population: ", HSE_population
+                    write(1224, *) "LDA_population: ", LDA_population
+                    write(1224, *) "energy_cut: ", energy_cut
+                    write(1224, *) "gap_cut: ", gap_cut               
+                    write(1224, *) "LDA_ES_Eg: ", LDA_ES_Eg
+                    write(1224, *) "LDA_Es_opt: ", LDA_Es_opt
+                    write(1224, *) "HSE_ES_Eg: ", HSE_ES_Eg
+                    write(1224, *) "HSE_Es_opt: ", HSE_Es_opt
+                end if
+            end if
+        end if
         write(1224, *) "cluster: ", cluster
         if(cluster) then
+            write(1224, *) "model_ball: ", model_ball
             write(1224, *) "init_radius: ", init_radius
             write(1224, *) "cluster_ctr_x: ", cluster_ctr_x
             write(1224, *) "cluster_ctr_y: ", cluster_ctr_y
             write(1224, *) "cluster_ctr_z: ", cluster_ctr_z
+            write(1224, *) "model_shell: ", model_shell
+            write(1224, *) "shell_radius_out: ", shell_radius_out
+            write(1224, *) "shell_radius_in: ", shell_radius_in
+            write(1224, *) "shell_ctr_x: ", shell_ctr_x
+            write(1224, *) "shell_ctr_y: ", shell_ctr_y
+            write(1224, *) "shell_ctr_z: ", shell_ctr_z
+            write(1224, *) "model_plate: ", model_plate
+            write(1224, *) "plate_radius: ", plate_radius
+            write(1224, *) "plate_height: ", plate_height
+            write(1224, *) "plate_ctr_x: ", plate_ctr_x
+            write(1224, *) "plate_ctr_y: ", plate_ctr_y
+            write(1224, *) "plate_ctr_z: ", plate_ctr_z
             write(1224, *) "cluster_substrate: ", cluster_substrate
             if(cluster_substrate) then
                 write(1224, *) "SubstrateElements: ", (SubstrateElements(i), i = 1, num_species)
@@ -543,6 +818,7 @@ module init_mod
         if(PRESSURE) then
             write(1224, *) "PSTRESS: ", PSTRESS
         end if
+        write(1224, *) "selective_dynamics: ", selective_dynamics
         write(1224, *) "find_defect: ", find_defect
         if(find_defect) then
             write(1224, *) "defect_type: ", defect_type
@@ -552,4 +828,4 @@ module init_mod
     end subroutine write_input
         
 end module init_mod
-
+    

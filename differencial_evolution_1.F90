@@ -25,7 +25,7 @@ module differencial_evolution
             if(i > floor(population * de_ratio)) then
                 call init_lat_nosym(i)
                 call fill_atom(i)
-                continue
+                cycle
             end if
             do
                 call random_number(tmp)
@@ -57,7 +57,7 @@ module differencial_evolution
                 end do
                 f1 = .true.
                 do k = 1, n
-                    if(k == j) continue
+                    if(k == j) cycle
                     call find_dis(lat, pstruct(i) % pos(:, k), y(:), dis)
                     a1 = pstruct(i) % ptype(k)
                     a2 = pstruct(i) % ptype(j)
@@ -102,7 +102,7 @@ module differencial_evolution
             write(*, *) "atom_type: ", (pstruct(i) % ptype(k), k = 1, pstruct(i) % natom)
             if(i > ratio_cut) then
                 call init_struct_tot(i)
-                continue
+                cycle
             end if
             do
                 call random_number(tmp)
@@ -220,7 +220,9 @@ module differencial_evolution
                 end if
             end if
         end do
+        write(*, *) "start sort"
         call sort_results_mode()
+        write(*, *) "end sort"
         ratio_cut = floor(de_ratio * population)
         nf = 0
         do i = 1, population
@@ -228,15 +230,20 @@ module differencial_evolution
                 nf = nf + 1
             end if
         end do
+        write(*, *) "number of struct in 1st front: ", nf
         do i = 1, population
+            write(*, *) "de on: ", i
             if(pool(i) % energy > 100 .or. pool(i) % hardness > 100) then
+                write(*, *) "de new struct1: ", i
                 call init_struct_sym(i)
-                continue
+                cycle
             end if
             if(i > ratio_cut) then
+                write(*, *) "de new struct2: ", i
                 call init_struct_sym(i)
-                continue
+                cycle
             end if
+            write(*, *) "de operation: ", i
             do
                 call random_number(tmp)
                 a = floor(tmp * ratio_cut + 1)

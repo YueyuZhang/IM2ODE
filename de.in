@@ -1,18 +1,22 @@
 # input file for de
-SystemName=CAu
-NumberOfSpecies=2
-NumberOfElements=72 6
-NameOfElements=C Au
+SystemName=Si
+NumberOfSpecies=1
+NumberOfElements=4
+NameOfElements=Si
 Volumn=80
 DistanceOfAtom=
-DIS1=1.2 1.2
-DIS2=1.2 1.8
-Population=15
+#DIS1=1.2 1.2
+DIS2=1.8
+Population=10
 MaxStep=1
 De_ratio=0.6
-#Symmetry=T
+#SelectiveDynamics=T
+Symmetry=T
 #spg_front=168
 #spg_rear=194
+Pickup=F
+#Pickup_step=1
+#Mystruct=2
 
 #The unit of pressure is GPa
 #PSTRESS = 15
@@ -27,36 +31,48 @@ De_ratio=0.6
 #ES_opt=1.0
 
 #HSE=T
-#HSE_population=6
-#LDA_population=20
-#energy_cut=-8.35
-#gap_cut=3.0
+#HSE_population=5
+#LDA_population=15
+#energy_cut=-7.35
+#gap_cut=5.0
+#LDA_ES_Eg=0.70
+#LDA_Es_opt=0.85
+#HSE_ES_Eg=1.50
+#HSE_Es_opt=1.65
 
-#Q2D=T
-#vacuum_layer=10
-#Area=70.15
+Q2D=T
+vacuum_layer=10
+Area=12
+Layer_hight=2.5
 
-cluster=T
-init_radius=1.5
-cluster_ctr_x=0.5
-cluster_ctr_y=0.5
-cluster_ctr_z=0.36
-cluster_substrate=T
-SubstrateElements=72 0
+#cluster=T
+#model_ball=1.0
+#init_radius=1.5
+#cluster_ctr_x=0.5
+#cluster_ctr_y=0.5
+#cluster_ctr_z=0.5
+#model_shell=0.0
+#shell_radius_out=2.0
+#shell_radius_in=1.8
+#shell_ctr_x=0.50
+#shell_ctr_y=0.50
+#shell_ctr_z=0.50
+#model_plate=0.0
+#plate_radius=2.8
+#plate_height=0.2
+#plate_ctr_x=0.5
+#plate_ctr_y=0.5
+#plate_ctr_z=0.32
+#cluster_substrate=T
+#SubstrateElements=72 0
 
 
-fix_lat=T
-fix_a=14.8
-fix_b=14.8
-fix_c=25.0
-fix_alpha=120
-fix_beta=90
-fix_gama=90
+#fix_lat=T
+#fix_a=14.8
+#fix_b=14.8
+#fix_c=25.0
+#fix_alpha=120
+#fix_beta=90
+#fix_gama=90
 
 #find_defect=T
-#defect_type=1
-#the coordinates of center are in cartisian coordinates
-#center_x=1.5
-#center_y=1.5
-#center_z=1.5
-

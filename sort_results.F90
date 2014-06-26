@@ -44,13 +44,18 @@ module sort
     subroutine sort_results_mode()
         use kinds
         use constants
+        use init_struct_all, only : init_struct_tot
         use parameters, only : struct_info, pstruct, pool, population
+        use parameters, only : HSE, energy_cut, gap_cut, LDA_population, HSE_population
         implicit none
         type(struct_info) :: tmp
+        type(struct_info) :: pstruct_HSE(max_struct)
         integer(i4b) :: flag(max_struct), fcnt
         integer(i4b) :: i,j,k
-        real(dp) :: fts
+        real(dp) :: fts, inf
+        logical :: f1
         
+        inf = 1000
         call sort_results()
         flag = 0
         do i = 1, population
@@ -97,8 +102,40 @@ module sort
             end if
         end do
         do i = 1, population
-            write(1224, "(1X, 2I5, A9, 2F10.3)"), i, pool(i) % frontier, "fitness= ", pool(i) % energy, pool(i) % hardness
+            write(1224, "(1X, 2I5, A20, 2F10.3)"), i, pool(i) % frontier, "pool_fitness= ", pool(i) % energy, pool(i) % hardness
+            write(1224, "(1X, 2I5, A20, 2F10.3)"), i, pool(i) % frontier, "pstruct_fitness= ", &
+            & pstruct(i) % energy, pstruct(i) % hardness
+            write(*, "(1X, 2I5, A20, 2F10.3)"), i, pool(i) % frontier, "pool_fitness= ", pool(i) % energy, pool(i) % hardness
+            write(*, "(1X, 2I5, A20, 2F10.3)"), i, pool(i) % frontier, "pstruct_fitness= ", &
+            & pstruct(i) % energy, pstruct(i) % hardness
         end do
+        if(HSE) then
+            do i = 1, HSE_population
+                f1 = .true.
+                do j = 1, LDA_population
+                    if((pstruct(j) % energy / pstruct(j) % natom) < energy_cut .and. pstruct(j) % hardness < gap_cut) then
+                        write(*, *), "HSE select: ", j
+                        write(*, *), pstruct(j) % energy, pstruct(j) % hardness
+                        f1 = .false.
+                        pstruct_HSE(i) = pstruct(j)
+                        pstruct(j) % energy = inf
+                        pstruct(j) % hardness = inf
+                        write(*, *), pstruct(j) % energy, pstruct(j) % hardness
+                        exit
+                    end if
+                end do
+                if(f1) then
+                    write(*, *), "In HSE, generate new structure: ", i
+                    call init_struct_tot(i)
+                    pstruct_HSE(i) = pstruct(i)
+                    pstruct(i) % energy = inf
+                    pstruct(i) % hardness = inf
+                end if
+            end do
+            do i = 1, HSE_population
+                pstruct(i) = pstruct_HSE(i)
+            end do
+        end if
     end subroutine sort_results_mode
 end module sort
 

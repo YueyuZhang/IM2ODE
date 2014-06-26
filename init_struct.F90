@@ -33,15 +33,22 @@ module init_struct
         use constants, only : pi
         use parameters, only : pstruct, atom_dis
         use parameters, only : cluster, init_radius, cluster_ctr_x, cluster_ctr_y, cluster_ctr_z
+        use parameters, only : model_ball, model_shell, model_plate
+        use parameters, only : shell_radius_in, shell_radius_out
+        use parameters, only : shell_ctr_x, shell_ctr_y, shell_ctr_z
+        use parameters, only : plate_radius, plate_height
+        use parameters, only : plate_ctr_x, plate_ctr_y, plate_ctr_z
         implicit none
         integer(i4b), intent(in) :: i
         integer(i4b) :: a1, a2, i1, j, k
         real(dp) :: pos_car(3), pos_dir(3), pos_tmp(3), pos_tmp_car(3), lattice(3,3), pos_bak(3)
         real(dp) :: distance, distance_tot, distance_max
-        real(dp) :: r, theta, phi
+        real(dp) :: r, theta, phi, height
+        real(dp) :: tmp
         logical :: flag
         distance_max = 0.0
         lattice = pstruct(i) % lat
+        call random_number(tmp)
         do j = 1, pstruct(i) % natom
             flag = .true.
             i1 = 1
@@ -53,19 +60,49 @@ module init_struct
                     call random_number(pos_dir(k))
                 end do
                 if(cluster) then
-                    call random_number(r)
-                    call random_number(theta)
-                    call random_number(phi)
-                    r = r * init_radius
-                    theta = theta * 2.0 * pi
-                    phi = phi * pi
-                    pos_car(1) = r * sin(phi) * cos(theta)
-                    pos_car(2) = r * sin(phi) * sin(theta)
-                    pos_car(3) = r * cos(phi)
-                    call car2dir(lattice, pos_car, pos_dir)
-                    pos_dir(1) = pos_dir(1) + cluster_ctr_x
-                    pos_dir(2) = pos_dir(2) + cluster_ctr_y
-                    pos_dir(3) = pos_dir(3) + cluster_ctr_z
+                    if(tmp < model_ball) then
+                        call random_number(r)
+                        call random_number(theta)
+                        call random_number(phi)
+                        r = r * init_radius
+                        theta = theta * 2.0 * pi
+                        phi = phi * pi
+                        pos_car(1) = r * sin(phi) * cos(theta)
+                        pos_car(2) = r * sin(phi) * sin(theta)
+                        pos_car(3) = r * cos(phi)
+                        call car2dir(lattice, pos_car, pos_dir)
+                        pos_dir(1) = pos_dir(1) + cluster_ctr_x
+                        pos_dir(2) = pos_dir(2) + cluster_ctr_y
+                        pos_dir(3) = pos_dir(3) + cluster_ctr_z
+                    else if (tmp < model_ball + model_shell) then
+                        call random_number(r)
+                        call random_number(theta)
+                        call random_number(phi)
+                        r = r * (shell_radius_out - shell_radius_in) + shell_radius_in
+                        theta = theta * 2.0 * pi
+                        phi = phi * pi
+                        pos_car(1) = r * sin(phi) * cos(theta)
+                        pos_car(2) = r * sin(phi) * sin(theta)
+                        pos_car(3) = r * cos(phi)
+                        call car2dir(lattice, pos_car, pos_dir)
+                        pos_dir(1) = pos_dir(1) + shell_ctr_x
+                        pos_dir(2) = pos_dir(2) + shell_ctr_y
+                        pos_dir(3) = pos_dir(3) + shell_ctr_z
+                    else
+                        call random_number(r)
+                        call random_number(theta)
+                        call random_number(height)
+                        r = r * plate_radius
+                        theta = theta * 2.0 * pi
+                        height = (height - 0.5) * plate_height
+                        pos_car(1) = r * sin(theta)
+                        pos_car(2) = r * cos(theta)
+                        pos_car(3) = height
+                        call car2dir(lattice, pos_car, pos_dir)
+                        pos_dir(1) = pos_dir(1) + plate_ctr_x
+                        pos_dir(2) = pos_dir(2) + plate_ctr_y
+                        pos_dir(3) = pos_dir(3) + plate_ctr_z
+                    end if
                 end if
                 pos_car = pos_dir
                 call dir2car(lattice, pos_dir, pos_car)
@@ -103,17 +140,26 @@ module init_struct
         use parameters, only : pstruct, atom_dis
         use parameters, only : cluster, init_radius, cluster_ctr_x, cluster_ctr_y, cluster_ctr_z
         use parameters, only : cluster_substrate, substrate
+        use parameters, only : model_ball, model_shell, model_plate
+        use parameters, only : shell_radius_in, shell_radius_out
+        use parameters, only : shell_ctr_x, shell_ctr_y, shell_ctr_z
+        use parameters, only : plate_radius, plate_height
+        use parameters, only : plate_ctr_x, plate_ctr_y, plate_ctr_z
+        use parameters, only : selective_dynamics
+        use parameters, only : find_defect
         implicit none
         integer(i4b), intent(in) :: i
         integer(i4b) :: a1, a2, i1, j, k
         real(dp) :: pos_car(3), pos_dir(3), pos_tmp(3), pos_tmp_car(3), lattice(3,3), pos_bak(3)
         real(dp) :: distance, distance_tot, distance_max, top_substrate
-        real(dp) :: r, theta, phi
+        real(dp) :: r, theta, phi, height
+        real(dp) :: tmp
         logical :: flag
         distance_max = 0.0
         top_substrate = 0.0
         lattice = pstruct(i) % lat
         write(*, *) "fill substrate"
+        if(selective_dynamics) pstruct(i) % SelectiveDynamics = substrate % SelectiveDynamics
         do j = 1, pstruct(i) % natom
             if(substrate % ptype(j) /= -1) then
                 pstruct(i) % pos(:, j) = substrate % pos(:, j)
@@ -123,6 +169,7 @@ module init_struct
                 end if
             end if
         end do
+        call random_number(tmp)
         do j = 1, pstruct(i) % natom
             if(substrate % ptype(j) == -1) then
                 flag = .true.
@@ -131,20 +178,55 @@ module init_struct
                 do
                     flag = .true.
                     i1 = i1 + 1
-                    call random_number(r)
-                    call random_number(theta)
-                    call random_number(phi)
-                    r = r * init_radius
-                    theta = theta * 2.0 * pi
-                    phi = phi * pi
-                    pos_car(1) = r * sin(phi) * cos(theta)
-                    pos_car(2) = r * sin(phi) * sin(theta)
-                    pos_car(3) = r * cos(phi)
-                    call car2dir(lattice, pos_car, pos_dir)
-                    pos_dir(1) = pos_dir(1) + cluster_ctr_x
-                    pos_dir(2) = pos_dir(2) + cluster_ctr_y
-                    pos_dir(3) = pos_dir(3) + cluster_ctr_z
-                    if(pos_dir(3) < top_substrate) then
+                    
+                    if(tmp < model_ball) then
+                        ! ball model
+                        call random_number(r)
+                        call random_number(theta)
+                        call random_number(phi)
+                        r = r * init_radius
+                        theta = theta * 2.0 * pi
+                        phi = phi * pi
+                        pos_car(1) = r * sin(phi) * cos(theta)
+                        pos_car(2) = r * sin(phi) * sin(theta)
+                        pos_car(3) = r * cos(phi)
+                        call car2dir(lattice, pos_car, pos_dir)
+                        pos_dir(1) = pos_dir(1) + cluster_ctr_x
+                        pos_dir(2) = pos_dir(2) + cluster_ctr_y
+                        pos_dir(3) = pos_dir(3) + cluster_ctr_z
+                    else if (tmp < model_ball + model_shell) then
+                        ! shell model
+                        call random_number(r)
+                        call random_number(theta)
+                        call random_number(phi)
+                        r = r * (shell_radius_out - shell_radius_in) + shell_radius_in
+                        theta = theta * 2.0 * pi
+                        phi = phi * pi
+                        pos_car(1) = r * sin(phi) * cos(theta)
+                        pos_car(2) = r * sin(phi) * sin(theta)
+                        pos_car(3) = r * cos(phi)
+                        call car2dir(lattice, pos_car, pos_dir)
+                        pos_dir(1) = pos_dir(1) + shell_ctr_x
+                        pos_dir(2) = pos_dir(2) + shell_ctr_y
+                        pos_dir(3) = pos_dir(3) + shell_ctr_z
+                    else
+                        ! plate model
+                        call random_number(r)
+                        call random_number(theta)
+                        call random_number(height)
+                        r = r * plate_radius
+                        theta = theta * 2.0 * pi
+                        height = (height - 0.5) * plate_height
+                        pos_car(1) = r * sin(theta)
+                        pos_car(2) = r * cos(theta)
+                        pos_car(3) = height
+                        call car2dir(lattice, pos_car, pos_dir)
+                        pos_dir(1) = pos_dir(1) + plate_ctr_x
+                        pos_dir(2) = pos_dir(2) + plate_ctr_y
+                        pos_dir(3) = pos_dir(3) + plate_ctr_z
+                    end if
+                    
+                    if(pos_dir(3) < top_substrate .and. (.not. find_defect)) then
                         flag = .false.
                     end if
                     pos_car = pos_dir
@@ -308,7 +390,7 @@ module init_struct_spg
         logical :: f1, f2, f3
         real(dp) :: a,b,c,x(192), y(192), z(192)
         real(dp) :: pos_car(3), pos_dir(3), pos_tmp(3), pos_tmp_car(3), lattice(3,3), distance
-        integer(i4b) :: type1, type2, natom
+        integer(i4b) :: type1, type2, natom, spg_old
         integer(i4b) :: dx(27), dy(27), dz(27), dnum
         dnum = 0
         do i = -1, 1
@@ -335,6 +417,7 @@ module init_struct_spg
         end if
            
         spg_index = pstruct(tag) % spg_idx
+        spg_old = pstruct(tag) % spg_idx
         lattice = pstruct(tag) % lat
         ptyp = pstruct(tag) % ntyp
         patom = 0
@@ -348,6 +431,10 @@ module init_struct_spg
             sum_atom = pstruct(tag) % nelement(pt)
             call find(1,0)
             write(*, *)"spg = ", spg_index
+            if(spg_index .ne. spg_old) then
+                write(*, *) "nspg = ", spg_index, spg_old
+                spg_index = spg_old
+            end if
             if(cnt == 0) then
                 write(*, *) "no permutation"
                 flag = .false.
@@ -455,7 +542,7 @@ module init_struct_spg
                                 end do
                                 iatom = iatom + spg_ctl(i, spg_index)
                             end if
-                            if(f2 .or. nf2 > 5000) exit
+                            if(f2 .or. nf2 > 100) exit
                         end do
                     end do
                 end do
@@ -478,7 +565,7 @@ module init_struct_spg
         integer(i4b) :: i,j,m, i1
         real(dp) :: tmp(32)
         real(dp) :: t1, eps = 1e-8
-        if(cnt > 100000) return
+        if(cnt > 10000) return
         if(k > n_tot + 1) return
         if(add > sum_atom) return
         if(k == n_tot + 1 .and. add == sum_atom) then
