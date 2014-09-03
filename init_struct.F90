@@ -147,9 +147,11 @@ module init_struct
         use parameters, only : plate_ctr_x, plate_ctr_y, plate_ctr_z
         use parameters, only : selective_dynamics
         use parameters, only : find_defect
+        use parameters, only : model_surface, surface_height
         implicit none
         integer(i4b), intent(in) :: i
         integer(i4b) :: a1, a2, i1, j, k
+        integer(i4b) :: dx(27), dy(27), dz(27), dnum, q
         real(dp) :: pos_car(3), pos_dir(3), pos_tmp(3), pos_tmp_car(3), lattice(3,3), pos_bak(3)
         real(dp) :: distance, distance_tot, distance_max, top_substrate
         real(dp) :: r, theta, phi, height
@@ -169,6 +171,17 @@ module init_struct
                 end if
             end if
         end do
+        
+        dnum = 0
+        do k = -1, 1
+            do j = -1, 1
+                dnum = dnum + 1
+                dx(dnum) = k
+                dy(dnum) = j
+                dz(dnum) = 0
+            end do
+        end do
+        
         call random_number(tmp)
         do j = 1, pstruct(i) % natom
             if(substrate % ptype(j) == -1) then
@@ -179,7 +192,15 @@ module init_struct
                     flag = .true.
                     i1 = i1 + 1
                     
-                    if(tmp < model_ball) then
+                    if(model_surface) then
+                        ! surface model
+                        call random_number(r)
+                        call random_number(theta)
+                        call random_number(phi)
+                        pos_dir(1) = r
+                        pos_dir(2) = theta
+                        pos_dir(3) = phi * surface_height / lattice(3, 3) + top_substrate
+                    else if(tmp < model_ball) then
                         ! ball model
                         call random_number(r)
                         call random_number(theta)
@@ -241,7 +262,20 @@ module init_struct
                         if(distance < atom_dis(a1,a2)) then
                             flag = .false.
                             if(.not. flag .and. distance < distance_tot) distance_tot = distance
-                        end if    
+                        end if
+                        if(model_surface) then
+                            do q = 1, dnum
+                                pos_tmp(1) = pstruct(i) % pos(1, k) + dx(q)
+                                pos_tmp(2) = pstruct(i) % pos(2, k) + dy(q)
+                                pos_tmp(3) = pstruct(i) % pos(3, k) + dz(q)
+                                call dir2car(lattice, pos_tmp, pos_tmp_car)
+                                call find_dis(lattice, pos_car, pos_tmp_car, distance)
+                                if(distance < atom_dis(a1, a2)) then
+                                    flag = .false.
+                                    if(.not. flag .and. distance < distance_tot) distance_tot = distance
+                                end if
+                            end do
+                        end if
                     end do
                     do k = j + 1, pstruct(i) % natom
                         if(substrate % ptype(k) /= -1) then
@@ -592,6 +626,7 @@ module init_struct_spg
     end subroutine find
     
     subroutine init_struct_sym(i)
+        ! generate structures
         use kinds
         use parameters, only: struct_info
         use parameters, only: pstruct, population, num_species, num_ele, atom_dis

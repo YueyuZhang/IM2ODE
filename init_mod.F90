@@ -9,7 +9,7 @@ module init_mod
     use kinds
     use parameters, only : spacegroup_log, Pickup
     use spacegroup_data, only : init_spg
-    use parameters, only : cluster_substrate, find_defect
+    use parameters, only : cluster_substrate, find_defect, model_surface, cluster
     use de_tools, only : read_init_struct
     implicit none
     integer(i4b) :: flag
@@ -43,10 +43,15 @@ module init_mod
         
         call init_spg
         
+        if(model_surface) then
+            cluster = .true.
+            cluster_substrate = .true.
+        end if
+        
         if(cluster_substrate) then
             call read_init_struct(flag)
             if(flag == 0) then
-                write(1224, *) "Error: wrong format if input structure"
+                write(1224, *) "Error: wrong format of input structure"
                 stop
             end if
         end if
@@ -81,12 +86,14 @@ module init_mod
         use parameters, only : PRESSURE, PSTRESS
         use parameters, only : cluster, model_ball, model_shell, model_plate
         use parameters, only : init_radius, cluster_substrate, SubstrateElements
+        use parameters, only : model_surface, surface_height
         use parameters, only : cluster_ctr_x, cluster_ctr_y, cluster_ctr_z
         use parameters, only : shell_radius_in, shell_radius_out
         use parameters, only : shell_ctr_x, shell_ctr_y, shell_ctr_z
         use parameters, only : plate_radius, plate_height
         use parameters, only : plate_ctr_x, plate_ctr_y, plate_ctr_z
         use parameters, only : selective_dynamics
+        use parameters, only : dimer_mode, dimer_dis
         use kinds
         implicit none
         
@@ -566,6 +573,21 @@ module init_mod
             end if
         end if
         
+        call find(nametag, "model_surface", i)
+        if(i == 0) then
+            model_surface = .false.
+        else
+            read(number(i), *) model_surface
+            
+            call find(nametag, "surface_height", i)
+            if(i == 0) then
+                write(1224, *) "input surface_height"
+                surface_height = 0.5
+            else
+                read(number(i), *) surface_height
+            end if
+        end if
+        
         call find(nametag, "fix_lat", i)
         if(i == 0) then
             fix_lat = .false.
@@ -710,6 +732,20 @@ module init_mod
             
         end if
         
+        call find(nametag, "dimer_mode", i)
+        if(i == 0) then
+            dimer_mode = .false.
+        else
+            read(number(i), *) dimer_mode
+            
+            call find(nametag, "dimer_dis", i)
+            if(i == 0) then
+                dimer_dis = 1.6
+            else
+                read(number(i), *) dimer_dis
+            end if
+        end if
+        
     end subroutine read_input
     
     subroutine find(a, b, i)
@@ -806,6 +842,12 @@ module init_mod
                 write(1224, *) "SubstrateElements: ", (SubstrateElements(i), i = 1, num_species)
             end if
         end if
+        
+        write(1224, *) "model_surface: ", model_surface
+        if(model_surface) then
+            write(1224, *) "surface_height: ", surface_height
+        end if
+        
         write(1224, *) "fix_lat: ", fix_lat
         if(fix_lat) then
             write(1224, *) "fix_a: ", fix_a
@@ -824,7 +866,12 @@ module init_mod
             write(1224, *) "defect_type: ", defect_type
             write(1224, *) "center: ", center_x, center_y, center_z
         end if
+        if(dimer_mode) then
+            write(1224, *) "dimer_mode: ", dimer_mode
+            write(1224, *) "dimer_dis: ", dimer_dis
+        end if
         write(1224, *) "---end write input---"
+        
     end subroutine write_input
         
 end module init_mod

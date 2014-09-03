@@ -127,7 +127,7 @@ module lattice_mod
         f1 = .false.
         n_spg = spg_rear - spg_front + 1
         do
-            if(Q2D) exit
+!            if(Q2D) exit
             call random_number(a)
             spg_index = floor(n_spg * a + spg_front)
             if(spacegroup_log(spg_index) == 0) then
@@ -154,19 +154,19 @@ module lattice_mod
         end do
         !if(spg_index > 230 .or. spg_index < 1) spg_index = 1
         if(spg_index > spg_rear .or. spg_index < spg_front) spg_index = spg_front
-        if(Q2D) then
-            call random_number(a)
-            spg_index = floor(1.0 + a * 9.9)
-            if(spg_index == 2) spg_index = 3
-            if(spg_index == 3) spg_index = 16
-            if(spg_index == 4) spg_index = 25
-            if(spg_index == 5) spg_index = 75
-            if(spg_index == 6) spg_index = 89
-            if(spg_index == 7) spg_index = 143
-            if(spg_index == 8) spg_index = 149
-            if(spg_index == 9) spg_index = 168
-            if(spg_index == 10) spg_index = 177
-        end if
+!        if(Q2D) then
+!            call random_number(a)
+!            spg_index = floor(1.0 + a * 9.9)
+!            if(spg_index == 2) spg_index = 3
+!            if(spg_index == 3) spg_index = 16
+!            if(spg_index == 4) spg_index = 25
+!            if(spg_index == 5) spg_index = 75
+!            if(spg_index == 6) spg_index = 89
+!            if(spg_index == 7) spg_index = 143
+!            if(spg_index == 8) spg_index = 149
+!            if(spg_index == 9) spg_index = 168
+!            if(spg_index == 10) spg_index = 177
+!        end if
         pstruct(i) % spg_idx = spg_index
         !pstruct(i) % spg_idx = 3
         write(*, *) "end init spg_INDEX", spg_index

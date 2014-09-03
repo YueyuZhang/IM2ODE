@@ -81,6 +81,11 @@ module parameters
     real(dp) :: plate_radius, plate_height
     real(dp) :: plate_ctr_x, plate_ctr_y, plate_ctr_z
     
+    !surface
+    !based on the cluster substrate part
+    logical :: model_surface
+    real(dp) :: surface_height
+    
     !fix-lattice(control & parameters)
     logical :: fix_lat
     real(dp) :: fix_a, fix_b, fix_c, fix_alpha, fix_beta, fix_gama
@@ -98,6 +103,10 @@ module parameters
     type(struct_info) :: defect_struct
     integer(i4b) :: defect_type ! geometry type of defect, 1: box, 2: spherecal
     real(dp) :: center_x, center_y, center_z, defect_radius, length_x, length_y, length_z
+    
+    !dimer
+    logical :: dimer_mode
+    real(dp) :: dimer_dis
     
     
 end module parameters

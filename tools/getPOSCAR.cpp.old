@@ -10,7 +10,6 @@ using namespace std;
 
 struct node{
 	double a, b;
-	int c;
 	friend bool operator<(node p, node q){
 		return p.a < q.a;
 	}
@@ -41,17 +40,13 @@ int main(){
 			if(tag == 2)
 				scanf("%lf", &ss[cnt].b);
 			else
-				ss[cnt].b = ss[cnt].a; //cnt represents total of all the structures.
+				ss[cnt].b = ss[cnt].a;
 //			printf("%.6f %.6f\n", ss[cnt].a, ss[cnt].b);
-			ss[cnt].c=0;
 			flag = 0;
 			if(ss[cnt].a < eng_cut && ss[cnt].b < gap_cut)
 				flag = 1;
 			cnt ++;
-			if(flag) {
-				ss[cnt-1].c=pn;
-				sprintf(str, "POSCAR%d", pn++);//pn represents the number of wanted structures.
-			}
+			if(flag) sprintf(str, "POSCAR%d", pn++);
 			if(flag) freopen(str, "w", stdout);
 			for(j = 0; j < 8; j ++){
 				gets(str);
@@ -77,7 +72,6 @@ int main(){
 	}
 	sort(ss, ss+cnt);
 	freopen("out.dat", "w", stdout);
-	printf("Frontier   NUM_POSCAR   Energy   Fitness\n");
 	memset(f1, 0, sizeof(f1));
 	flag = 1;
 	double gap;
@@ -88,7 +82,7 @@ int main(){
 			if(f1[i] == 0){
 				f1[i] = 1;
 				gap = ss[i].b;
-				printf("%d\t%d\t%.6f\t%.6f\n", front, ss[i].c, ss[i].a, ss[i].b);
+				printf("%d %.6f %.6f\n", front, ss[i].a, ss[i].b);
 				break;
 			}
 		}
@@ -96,8 +90,7 @@ int main(){
 			if(f1[i] == 0 && ss[i].b < gap){
 				f1[i] = 1;
 				gap = ss[i].b;
-				//printf("%d %.6f %.6f\n", front, ss[i].a, ss[i].b);
-				printf("%d\t%d\t%.6f\t%.6f\n", front, ss[i].c, ss[i].a, ss[i].b);
+				printf("%d %.6f %.6f\n", front, ss[i].a, ss[i].b);
 			}
 		}
 		flag = 0;

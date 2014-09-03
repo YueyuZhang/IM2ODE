@@ -1,12 +1,12 @@
 # input file for de
-SystemName=Si
-NumberOfSpecies=1
-NumberOfElements=4
-NameOfElements=Si
+SystemName=CN
+NumberOfSpecies=2
+NumberOfElements=8 6
+NameOfElements=C N
 Volumn=80
 DistanceOfAtom=
-#DIS1=1.2 1.2
-DIS2=1.8
+DIS1=1.2 1.2
+DIS2=1.2 1.2
 Population=10
 MaxStep=1
 De_ratio=0.6
@@ -67,12 +67,12 @@ Layer_hight=2.5
 #SubstrateElements=72 0
 
 
-#fix_lat=T
-#fix_a=14.8
-#fix_b=14.8
-#fix_c=25.0
-#fix_alpha=120
-#fix_beta=90
-#fix_gama=90
+fix_lat=T
+fix_a=7.6
+fix_b=7.6
+fix_c=1.0
+fix_alpha=120
+fix_beta=90
+fix_gama=90
 
 #find_defect=T
