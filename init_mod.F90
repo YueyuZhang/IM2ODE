@@ -87,6 +87,10 @@ module init_mod
         use parameters, only : cluster, model_ball, model_shell, model_plate
         use parameters, only : init_radius, cluster_substrate, SubstrateElements
         use parameters, only : model_surface, surface_height
+        use parameters, only : model_ribbon, ribbon_b_min, ribbon_b_max
+        use parameters, only : model_gb, bottom_height, gb_height, top_height
+        use parameters, only : Q2D_gb
+        use parameters, only : transverse_a, transverse_b
         use parameters, only : cluster_ctr_x, cluster_ctr_y, cluster_ctr_z
         use parameters, only : shell_radius_in, shell_radius_out
         use parameters, only : shell_ctr_x, shell_ctr_y, shell_ctr_z
@@ -586,6 +590,82 @@ module init_mod
             else
                 read(number(i), *) surface_height
             end if
+
+            call find(nametag, "model_ribbon", i)
+            if(i == 0) then
+                model_ribbon = .false.
+            else
+                read(number(i), *) model_ribbon
+                call find(nametag, "ribbon_b_min", i)
+                if(i == 0) then
+                    write(1224, *) "input ribbon_b_min"
+                    ribbon_b_min = 1
+                else
+                    read(number(i), *) ribbon_b_min
+                end if
+
+                call find(nametag, "ribbon_b_max", i)
+                if(i == 0) then
+                    write(1224, *) "input ribbon_b_max"
+                    ribbon_b_max = ribbon_b_max + 1
+                else
+                    read(number(i), *) ribbon_b_max
+                end if
+            end if
+        end if
+        
+        call find(nametag, "model_gb", i)
+        if(i == 0) then
+            model_gb = .false.
+        else
+            read(number(i), *) model_gb
+
+            call find(nametag, "bottom_height", i)
+            if(i == 0) then
+                write(1224, *) "input bottom_height"
+                bottom_height = 0.5
+            else
+                read(number(i), *) bottom_height
+            end if
+
+            call find(nametag, "gb_height", i)
+            if(i == 0) then
+                write(1224, *) "input gb_height"
+                gb_height = 0.5
+            else
+                read(number(i), *) gb_height
+            end if
+
+            call find(nametag, "top_height", i)
+            if(i == 0) then
+                write(1224, *) "input top_height"
+                top_height = 0.5
+            else
+                read(number(i), *) top_height
+            end if
+
+            call find(nametag, "transverse_a", i)
+            if(i == 0) then
+                write(1224, *) "input transeverse_a"
+                transverse_a = 0.0
+            else
+                read(number(i), *) transverse_a
+            end if
+
+            call find(nametag, "transverse_b", i)
+            if(i == 0) then
+                write(1224, *) "input transverse_b"
+                transverse_b = 0.0
+            else
+                read(number(i), *) transverse_b
+            end if
+        end if
+
+        call find(nametag, "Q2D_gb", i)
+        if(i == 0) then
+            Q2D_gb = .false.
+        else
+            read(number(i), *) Q2D_gb
         end if
         
         call find(nametag, "fix_lat", i)
@@ -846,7 +926,23 @@ module init_mod
         write(1224, *) "model_surface: ", model_surface
         if(model_surface) then
             write(1224, *) "surface_height: ", surface_height
+            write(1224, *) "model_ribbon: ", model_ribbon
+            if(model_ribbon) then
+                write(1224, *) "ribbon_b_min: ", ribbon_b_min
+                write(1224, *) "ribbon_b_max: ", ribbon_b_max
+            end if
         end if
+
+        write(1224, *) "model_gb: ", model_gb
+        if(model_gb) then
+            write(1224, *) "bottom_height: ", bottom_height
+            write(1224, *) "gb_height: ", gb_height
+            write(1224, *) "top_height: ", top_height
+            write(1224, *) "transverse_a: ", transverse_a
+            write(1224, *) "transverse_b: ", transverse_b
+        end if
+
+        write(1224, *) "Q2D_gb: ", Q2D_gb
         
         write(1224, *) "fix_lat: ", fix_lat
         if(fix_lat) then

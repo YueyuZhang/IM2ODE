@@ -1,21 +1,24 @@
 # input file for de
-SystemName=CN
-NumberOfSpecies=2
-NumberOfElements=8 6
-NameOfElements=C N
-Volumn=80
+SystemName=P
+NumberOfSpecies=1
+NumberOfElements=28 10 12 34 8
+NameOfElements=P
+Volumn=2103.58
 DistanceOfAtom=
-DIS1=1.2 1.2
-DIS2=1.2 1.2
-Population=10
-MaxStep=1
+DIS1=1.0 1.5 1.5 1.0 1.0
+DIS2=1.5 2.0 2.0 1.5 1.0
+DIS3=1.0 2.0 2.0 1.5 1.0
+DIS4=1.0 1.5 1.5 1.5 1.0
+DIS5=1.0 1.0 1.0 1.0 1.0
+Population=30
+MaxStep=30
 De_ratio=0.6
-#SelectiveDynamics=T
-Symmetry=T
+SelectiveDynamics=T
+#Symmetry=T
 #spg_front=168
 #spg_rear=194
-Pickup=F
-#Pickup_step=1
+#Pickup=T         #########################F
+#Pickup_step=2    #########################no
 #Mystruct=2
 
 #The unit of pressure is GPa
@@ -40,12 +43,12 @@ Pickup=F
 #HSE_ES_Eg=1.50
 #HSE_Es_opt=1.65
 
-Q2D=T
-vacuum_layer=10
-Area=12
-Layer_hight=2.5
+#Q2D=T
+#vacuum_layer=10
+#Area=12
+#Layer_hight=0.5
 
-#cluster=T
+cluster=T
 #model_ball=1.0
 #init_radius=1.5
 #cluster_ctr_x=0.5
@@ -63,16 +66,45 @@ Layer_hight=2.5
 #plate_ctr_x=0.5
 #plate_ctr_y=0.5
 #plate_ctr_z=0.32
-#cluster_substrate=T
-#SubstrateElements=72 0
+cluster_substrate=T
+SubstrateElements=28 8 12 32 8
 
+#for surface model, substrate is needed, otherwise you should switch to Q2D
+#SelectiveDynamics=T is strongly recommended
+model_surface=T
+surface_height=3
+
+#ribbon is built upon surface model
+#a directin is periodic, b is perpendicular to the surface
+model_ribbon=T
+ribbon_b_min=3
+ribbon_b_max=5
+
+#for grain boundary generation
+model_gb=T
+#the following three are cartisian coordinations
+#bottom_height=15.053
+#gb_height=3.893
+#top_height=16.204
+#transverse freedom for the top layer (direct)
+#transverse_a=1.0
+#transverse_b=1.0
+
+#for Q2D grain boundary
+#model_gb=T, model_ribbon=T and the parameters below them
+Q2D_gb=T
 
 fix_lat=T
-fix_a=7.6
-fix_b=7.6
-fix_c=1.0
-fix_alpha=120
+fix_a=7.736
+fix_b=7.736
+fix_c=35.15              #  53.0350
+fix_alpha=90
 fix_beta=90
 fix_gama=90
 
 #find_defect=T
+
+#dimer_mode=T
+#In dimer_mode, NumberOfElements should be even
+#only available in bulk system
+#dimer_dis=1.2

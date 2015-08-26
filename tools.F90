@@ -312,6 +312,9 @@ module de_tools
             call get_volumn(lat_matrix, VOL)
             energy = energy + 0.00625 * PSTRESS * VOL
         end if
+        if(energy / pstruct(tag) % natom < -10.0) then
+            energy = inf
+        end if
         pstruct(tag) % energy = energy
         write(*, *) tag, "energy", energy
         close(4312)

@@ -85,6 +85,22 @@ module parameters
     !based on the cluster substrate part
     logical :: model_surface
     real(dp) :: surface_height
+
+    !ribbon
+    !based on the surface part
+    logical :: model_ribbon
+    real(dp) :: ribbon_b_min, ribbon_b_max
+    
+    !grain_boundary
+    !based on the cluster substrate part
+    logical :: model_gb
+    real(dp) :: bottom_height, gb_height, top_height
+    real(dp) :: transverse_a, transverse_b
+
+    !Quansi-2D grain boundary
+    !based on the grain_boundary part
+    !also use the parameters of ribbon
+    logical :: Q2D_gb
     
     !fix-lattice(control & parameters)
     logical :: fix_lat

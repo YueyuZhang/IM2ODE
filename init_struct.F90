@@ -148,13 +148,17 @@ module init_struct
         use parameters, only : selective_dynamics
         use parameters, only : find_defect
         use parameters, only : model_surface, surface_height
+        use parameters, only : model_ribbon, ribbon_b_min, ribbon_b_max
+        use parameters, only : model_gb, bottom_height, gb_height, top_height
+        use parameters, only : Q2D_gb
+        use parameters, only : transverse_a, transverse_b
         implicit none
         integer(i4b), intent(in) :: i
         integer(i4b) :: a1, a2, i1, j, k
         integer(i4b) :: dx(27), dy(27), dz(27), dnum, q
         real(dp) :: pos_car(3), pos_dir(3), pos_tmp(3), pos_tmp_car(3), lattice(3,3), pos_bak(3)
         real(dp) :: distance, distance_tot, distance_max, top_substrate
-        real(dp) :: r, theta, phi, height
+        real(dp) :: r, theta, phi, height, a, b
         real(dp) :: tmp
         logical :: flag
         distance_max = 0.0
@@ -171,6 +175,23 @@ module init_struct
                 end if
             end if
         end do
+
+        if(model_gb) then
+            model_surface = .true.
+            top_substrate = bottom_height / lattice(3, 3)
+            surface_height = gb_height
+            ! transverse movement
+            call random_number(a)
+            call random_number(b)
+            do j = 1, pstruct(i) % natom
+                if(pstruct(i) % pos(3, j) > (top_substrate + 1e-2)) then
+                    a = a * transverse_a
+                    b = b * transverse_b
+                    pstruct(i) % pos(1, j) = pstruct(i) % pos(1, j) + a
+                    pstruct(i) % pos(2, j) = pstruct(i) % pos(2, j) + b
+                end if
+            end do
+        end if
         
         dnum = 0
         do k = -1, 1
@@ -247,6 +268,10 @@ module init_struct
                         pos_dir(3) = pos_dir(3) + plate_ctr_z
                     end if
                     
+                    if(model_ribbon .or. Q2D_gb) then
+                        pos_dir(2) = theta * (ribbon_b_max - ribbon_b_min) / lattice(2, 2) + ribbon_b_min / lattice(2,2)
+                    end if
+
                     if(pos_dir(3) < top_substrate .and. (.not. find_defect)) then
                         flag = .false.
                     end if

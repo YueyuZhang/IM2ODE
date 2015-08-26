@@ -74,18 +74,21 @@ module differencial_evolution
     
     subroutine run_de_vasp(step)
         use kinds
+        use constants
         use parameters, only : pstruct, pool, population, de_ratio
         use parameters, only : Q2D, vacuum_layer, cluster
+        use parameters, only : cluster_substrate, num_species, num_ele, SubstrateElements
         use sort, only : sort_results
         use init_struct_all, only : init_struct_tot
         use sort_atom_idx, only : kmatch
         implicit none
         integer(i4b), intent(in) :: step
-        integer(i4b) :: i,j,k, ratio_cut, a,b
+        integer(i4b) :: i,j,k, ratio_cut, a,b, i1
         real(dp) :: tmp, y(3), p1(3), p2(3), p3(3), pbest(3)
         real(dp) :: lambd = 0.2, F = 0.2
         real(dp) :: c1, c2, c3, ratio, max_z, min_z
         logical :: flag
+        logical :: is_substrate(max_atom * max_type)
         write(*, *) "start de_operation"
         do i = 1, population
             write(*, *) "energy now : old", pstruct(i) % energy, pool(i) % energy
@@ -117,6 +120,20 @@ module differencial_evolution
             !call kmatch(pool(1), pstruct(i))
             !call kmatch(pool(1), pool(a))
             !call kmatch(pool(1), pool(b))
+            !atoms of the substrate do not perform the de operation
+            if(cluster_substrate) then
+                i1 = 0
+                do j = 1, num_species
+                    do k = 1, num_ele(j)
+                        i1 = i1 + 1
+                        if(k <= SubstrateElements(j)) then
+                            is_substrate(i1) = .true.
+                        else
+                            is_substrate(i1) = .false.
+                        end if
+                    end do
+                end do
+            end if
             do j = 1, pstruct(i) % natom
                 pbest(:) = pool(1) % pos(:, j)
                 p1(:) = pool(i) % pos(:, j)
@@ -124,7 +141,13 @@ module differencial_evolution
                 p3(:) = pool(b) % pos(:, j)
                 y(:) = lambd * pbest(:) + (1-lambd) * p1(:) + F * (p2(:) - p3(:))
                 y(:) = y(:) - floor(y(:))
-                pstruct(i) % pos(:, j) = y(:)
+                if(cluster_substrate) then
+                    if(is_substrate(j)) then
+                        pstruct(i) % pos(:, j) = y(:)
+                    end if
+                else
+                    pstruct(i) % pos(:, j) = y(:)
+                end if
             end do
             call check(i, flag)
             if (flag .eqv. .false.) then
@@ -153,6 +176,7 @@ module differencial_evolution
     subroutine check(tag, flag)
         use kinds
         use parameters, only : pstruct, atom_dis
+        use parameters, only : model_gb, bottom_height, gb_height, top_height
         use init_struct, only : dir2car, find_dis
         implicit none
         integer(i4b), intent(in) :: tag
@@ -196,6 +220,19 @@ module differencial_evolution
                 end do
             end do
         end do
+
+        ! for grain boundary case
+        ! if atom is not in the gb region, return false
+        if(model_gb) then
+            do i = 1, n
+                dir0 = pstruct(tag) % pos(:, i)
+                if(dir0(3) < (bottom_height - 0.2 * gb_height) / lattice(3, 3) .or. &
+                    & dir0(3) > (1 - (top_height - 0.2 * gb_height)/ lattice(3, 3))) then
+                    flag = .false.
+                end if
+            end do
+        end if
+
     end subroutine check
     
     subroutine run_mode_vasp(step)
