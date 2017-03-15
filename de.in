@@ -1,17 +1,14 @@
 # input file for de
 SystemName=P
 NumberOfSpecies=1
-NumberOfElements=28 10 12 34 8
+NumberOfElements=14
 NameOfElements=P
-Volumn=2103.58
+AtomicNumberOfElements=15
+Volumn=2733.72
 DistanceOfAtom=
-DIS1=1.0 1.5 1.5 1.0 1.0
-DIS2=1.5 2.0 2.0 1.5 1.0
-DIS3=1.0 2.0 2.0 1.5 1.0
-DIS4=1.0 1.5 1.5 1.5 1.0
-DIS5=1.0 1.0 1.0 1.0 1.0
-Population=30
-MaxStep=30
+DIS1=1.9
+Population=10
+MaxStep=1
 De_ratio=0.6
 SelectiveDynamics=T
 #Symmetry=T
@@ -20,6 +17,9 @@ SelectiveDynamics=T
 #Pickup=T         #########################F
 #Pickup_step=2    #########################no
 #Mystruct=2
+
+#choice of ab initio software (default: VASP)
+PWMAT=T
 
 #The unit of pressure is GPa
 #PSTRESS = 15
@@ -67,21 +67,22 @@ cluster=T
 #plate_ctr_y=0.5
 #plate_ctr_z=0.32
 cluster_substrate=T
-SubstrateElements=28 8 12 32 8
+fix_atom=T
+SubstrateElements=12
 
 #for surface model, substrate is needed, otherwise you should switch to Q2D
 #SelectiveDynamics=T is strongly recommended
 model_surface=T
-surface_height=3
+surface_height=2
 
 #ribbon is built upon surface model
 #a directin is periodic, b is perpendicular to the surface
 model_ribbon=T
-ribbon_b_min=3
-ribbon_b_max=5
+ribbon_b_min=4.1850
+ribbon_b_max=6.2925
 
 #for grain boundary generation
-model_gb=T
+#model_gb=T
 #the following three are cartisian coordinations
 #bottom_height=15.053
 #gb_height=3.893
@@ -90,14 +91,11 @@ model_gb=T
 #transverse_a=1.0
 #transverse_b=1.0
 
-#for Q2D grain boundary
-#model_gb=T, model_ribbon=T and the parameters below them
-Q2D_gb=T
 
 fix_lat=T
-fix_a=7.736
-fix_b=7.736
-fix_c=35.15              #  53.0350
+fix_a=3.3136
+fix_b=25.0000
+fix_c=33.0000            #  53.0350
 fix_alpha=90
 fix_beta=90
 fix_gama=90

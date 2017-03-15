@@ -56,6 +56,45 @@ module de_tools
         end do
         close(4111)
     end subroutine write_vasp
+
+    subroutine write_pwmat(tag)
+        use kinds
+        use parameters, only : pstruct, sys_name, name_element
+        use parameters, only : num_species, num_ele, atm_num_element
+        use parameters, only : selective_dynamics
+        implicit none
+        integer(i4b), intent(in) :: tag
+        character(len=20) :: fname
+        integer(i4b) :: i,j,k,n,cnt
+        integer(i4b) :: move(3)
+        fname = "atom.config"//trim(itoa(tag))
+        open(4112, file=fname)
+        n = pstruct(tag)%natom
+        write(4112, *) n
+        write(4112, "(A7)") "LATTICE"
+        do i = 1, 3
+            write(4112,"(3F10.6)")(pstruct(tag)%lat(i,j),j=1,3)
+        end do
+        write(4112, "(A8)") "POSITION"
+        k = 0
+        cnt = 0
+        do i = 1, pstruct(tag)%natom
+            if(.not. selective_dynamics) pstruct(tag)%SelectiveDynamics(1:3,i) = (/.true.,.true.,.true./)
+            do j = 1, 3
+                if(pstruct(tag)%SelectiveDynamics(j, i)) then 
+                    move(j) = 1
+                else 
+                    move(j) = 0
+                end if
+            end do
+            if(i > cnt) then
+                k = k + 1
+                cnt = cnt + num_ele(k)
+            end if
+            write(4112, "(I6, 3F10.6, 3I3)") (atm_num_element(k)), (pstruct(tag)%pos(j,i), j=1, 3), (move(j), j = 1, 3)
+        end do
+        close(4112)
+    end subroutine write_pwmat
     
     
     subroutine write_input_all(step)
@@ -184,6 +223,7 @@ module de_tools
         use parameters, only : pstruct, ESflag
         use parameters, only : PRESSURE, PSTRESS
         use parameters, only : HSE
+        use parameters, only : PWMAT
         use parameters, only : selective_dynamics
         use lattice_mod, only : get_volumn
         use constants, only: max_atom, max_type
@@ -197,8 +237,12 @@ module de_tools
         character(len=200) :: strin
         character(len=40) :: nametag, number
         logical :: alive
-        call system("cd vasp_"//trim(itoa(tag))//"; cp CONTCAR OUTCAR* EIGENVAL OSZICAR ..;"//&
-        & "rm -rf ../Matrix_elements; (if [ -s Matrix_elements ]; then cp Matrix_elements ..; fi) ")
+        if(PWMAT) then
+            call system("cd pwmat_"//trim(itoa(tag))//"; cp CONTCAR OUTCAR ..;")
+        else
+            call system("cd vasp_"//trim(itoa(tag))//"; cp CONTCAR OUTCAR* EIGENVAL OSZICAR ..;"//&
+            & "rm -rf ../Matrix_elements; (if [ -s Matrix_elements ]; then cp Matrix_elements ..; fi) ")
+        end if
         inquire(file = "CONTCAR", exist = alive)
         if(alive) then
             open(4311, file="CONTCAR", status = "old")
@@ -246,7 +290,7 @@ module de_tools
             close(4311)
             return
         end if
-        if(selective_dynamics) then
+        if((.not. PWMAT) .and. selective_dynamics) then
             read(4311, *, iostat = f1)
             if(f1 /= 0) then
                 pstruct(tag) % energy = inf
@@ -256,7 +300,7 @@ module de_tools
         end if
         natom = pstruct(tag) % natom
         do i = 1, natom
-            if(selective_dynamics) then
+            if((.not. PWMAT) .and. selective_dynamics) then
                 read(4311, *, iostat = f1) (pos(j,i), j = 1, 3), (pstruct(tag)%SelectiveDynamics(j,i), j = 1, 3)
             else
                 read(4311, *, iostat = f1) (pos(j,i), j = 1, 3)
@@ -312,9 +356,9 @@ module de_tools
             call get_volumn(lat_matrix, VOL)
             energy = energy + 0.00625 * PSTRESS * VOL
         end if
-        if(energy / pstruct(tag) % natom < -10.0) then
-            energy = inf
-        end if
+        !if(energy / pstruct(tag) % natom < -10.0) then
+        !    energy = inf
+        !end if
         pstruct(tag) % energy = energy
         write(*, *) tag, "energy", energy
         close(4312)

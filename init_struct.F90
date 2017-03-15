@@ -440,6 +440,7 @@ module init_struct_spg
         use kinds
         use parameters, only : pstruct, atom_dis
         use parameters, only : Q2D
+        use parameters, only : fix_atom, selective_dynamics, SubstrateElements, substrate
         use init_struct
         use spacegroup_data, only : spg_opr, spg_ctl, spg_x, spg_y, spg_z, spg_add, spg_pro
         implicit none
@@ -451,6 +452,7 @@ module init_struct_spg
         real(dp) :: pos_car(3), pos_dir(3), pos_tmp(3), pos_tmp_car(3), lattice(3,3), distance
         integer(i4b) :: type1, type2, natom, spg_old
         integer(i4b) :: dx(27), dy(27), dz(27), dnum
+        write(*, *) "generate struct with symmetry"
         dnum = 0
         do i = -1, 1
             do j = -1, 1
@@ -462,7 +464,19 @@ module init_struct_spg
                 end do
             end do
         end do
-        
+
+        if(selective_dynamics) pstruct(tag) % SelectiveDynamics = substrate % SelectiveDynamics
+
+        if(fix_atom) then
+            write(*, *) "fix atoms:"
+            write(*, *) SubstrateElements
+            do j = 1, pstruct(tag) % natom
+                if(substrate % ptype(j) /= -1) then
+                    pstruct(tag) % pos(:, j) = substrate % pos(:, j)
+                end if
+            end do
+        end if
+
         if(Q2D) then
             dnum = 0
             do i = -1, 1
@@ -488,7 +502,15 @@ module init_struct_spg
             ans = 0
             cnt = 0
             sum_atom = pstruct(tag) % nelement(pt)
-            call find(1,0)
+            if(fix_atom) then
+                sum_atom = sum_atom - SubstrateElements(pt)
+            end if
+            if(sum_atom > 0) then
+                call find(1,0)
+            else
+                patom = patom + SubstrateElements(pt)
+                cycle
+            end if
             write(*, *)"spg = ", spg_index
             if(spg_index .ne. spg_old) then
                 write(*, *) "nspg = ", spg_index, spg_old
@@ -533,6 +555,7 @@ module init_struct_spg
                 !
                 ans(:) = res(:, res_idx)
                 iatom = 0
+                if(fix_atom) iatom = SubstrateElements(pt)
                 do i = 1, n_tot
                     do j = 1, ans(i)
                         f2 = .true.

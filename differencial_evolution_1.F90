@@ -78,6 +78,7 @@ module differencial_evolution
         use parameters, only : pstruct, pool, population, de_ratio
         use parameters, only : Q2D, vacuum_layer, cluster
         use parameters, only : cluster_substrate, num_species, num_ele, SubstrateElements
+        use parameters, only : fix_atom
         use sort, only : sort_results
         use init_struct_all, only : init_struct_tot
         use sort_atom_idx, only : kmatch
@@ -142,7 +143,7 @@ module differencial_evolution
                 y(:) = lambd * pbest(:) + (1-lambd) * p1(:) + F * (p2(:) - p3(:))
                 y(:) = y(:) - floor(y(:))
                 if(cluster_substrate) then
-                    if(is_substrate(j)) then
+                    if(.not. is_substrate(j)) then
                         pstruct(i) % pos(:, j) = y(:)
                     end if
                 else

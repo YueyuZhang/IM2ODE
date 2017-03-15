@@ -10,6 +10,7 @@ module init_mod
     use parameters, only : spacegroup_log, Pickup
     use spacegroup_data, only : init_spg
     use parameters, only : cluster_substrate, find_defect, model_surface, cluster
+    use parameters, only : fix_atom
     use de_tools, only : read_init_struct
     implicit none
     integer(i4b) :: flag
@@ -48,7 +49,7 @@ module init_mod
             cluster_substrate = .true.
         end if
         
-        if(cluster_substrate) then
+        if(cluster_substrate .or. fix_atom) then
             call read_init_struct(flag)
             if(flag == 0) then
                 write(1224, *) "Error: wrong format of input structure"
@@ -76,11 +77,13 @@ module init_mod
         use parameters, only : sys_name, num_species, num_ele, name_element, atom_dis, volumn
         use parameters, only : population, max_step, de_ratio, symmetry, spg_front, spg_rear
         use parameters, only : Pickup, Pickup_step, Mystruct
+        use parameters, only : PWMAT, atm_num_element
         use parameters, only : mode, hardness, rcut, ionicity
         use parameters, only : ESflag, ES_mod, ES_Eg, Es_opt
         use parameters, only : HSE, HSE_population, LDA_population, energy_cut, gap_cut
         use parameters, only : LDA_ES_Eg, LDA_Es_opt, HSE_ES_Eg, HSE_Es_opt
         use parameters, only : fix_lat, fix_a, fix_b, fix_c, fix_alpha, fix_beta, fix_gama
+        use parameters, only : fix_atom
         use parameters, only : Q2D, vacuum_layer, Area, Layer_hight
         use parameters, only : find_defect, defect_type, center_x, center_y, center_z, defect_radius, length_x, length_y, length_z
         use parameters, only : PRESSURE, PSTRESS
@@ -170,6 +173,22 @@ module init_mod
             read(number(i), *) (name_element(j), j = 1, num_species)
         end if
         
+        call find(nametag, "PWMAT", i)
+        if(i == 0) then
+            write(1224, *) "USE VASP"
+            PWMAT = .false.
+        else
+            read(number(i), *) PWMAT
+        end if
+
+        call find(nametag, "AtomicNumberOfElements", i)
+        if(i == 0) then
+            write(1224, *) "Input AtomicNumberOfElements"
+            atm_num_element(1) = 1
+        else
+            read(number(i), *) (atm_num_element(j), j = 1, num_species)
+        end if
+
         call find(nametag, "Volumn", i)
         if(i == 0) then
             write(1224, *) "Input Volumn"
@@ -566,17 +585,17 @@ module init_mod
             if(i == 0) then
                 cluster_substrate = .false.
             else
-                read(number(i), *) cluster_substrate
-                
-                call find(nametag, "SubstrateElements", i)
-                if(i == 0) then
-                    write(1224, *) "Input SubstrateElements"
-                else
-                    read(number(i), *) (SubstrateElements(j), j = 1, num_species)
-                end if
+                read(number(i), *) cluster_substrate                
             end if
         end if
         
+        call find(nametag, "SubstrateElements", i)
+        if(i == 0) then
+            write(1224, *) "Input SubstrateElements"
+        else
+            read(number(i), *) (SubstrateElements(j), j = 1, num_species)
+        end if
+
         call find(nametag, "model_surface", i)
         if(i == 0) then
             model_surface = .false.
@@ -666,6 +685,13 @@ module init_mod
             Q2D_gb = .false.
         else
             read(number(i), *) Q2D_gb
+        end if
+
+        call find(nametag, "fix_atom", i)
+        if(i == 0) then
+            fix_atom = .false.
+        else
+            read(number(i), *) fix_atom
         end if
         
         call find(nametag, "fix_lat", i)
@@ -852,6 +878,8 @@ module init_mod
         write(1224, *) "NumberOfSpecies: ", num_species
         write(1224, *) "NumberOfElements: ", (num_ele(i), i = 1, num_species)
         write(1224, *) "NameOfElements: ", (' '//name_element(i), i = 1, num_species)
+        write(1224, *) "PWMAT: ", PWMAT
+        write(1224, *) "AtomicNumberOfElements: ", (atm_num_element(i), i = 1, num_species)
         write(1224, *) "Volumn: ", volumn
         write(1224, *) "DistanceOfAtom: "
         do i = 1, num_species
@@ -943,7 +971,9 @@ module init_mod
         end if
 
         write(1224, *) "Q2D_gb: ", Q2D_gb
-        
+       
+        write(1224, *) "fix_atom", fix_atom
+ 
         write(1224, *) "fix_lat: ", fix_lat
         if(fix_lat) then
             write(1224, *) "fix_a: ", fix_a

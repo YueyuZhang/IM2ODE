@@ -11,13 +11,14 @@ use init_mod, only : init_run
 !use lattice_mod
 use init_struct_all, only : init_struct_tot
 use init_struct_spg, only : init_struct_sym
-use de_tools, only: read_vasp, write_vasp, write_input_all, write_vasp_all
+use de_tools, only: read_vasp, write_vasp, write_pwmat, write_input_all, write_vasp_all
 use de_tools, only: write_input_HSE_all, write_vasp_HSE_all, read_vasp_Pickup, read_mystruct
 use de_tools, only: bulkmodu, ES_fitness
 !use run_lammps
 use differencial_evolution, only : run_de_vasp, run_mode_vasp
 use sort, only : sort_results_mode
 use parameters, only : Pickup, Pickup_step, Mystruct
+use parameters, only : PWMAT
 use parameters, only : population, pstruct, pool, max_step, max_step, mode, cluster
 use parameters, only : hardness, ESflag, HSE
 use parameters, only : HSE_population, LDA_population
@@ -27,36 +28,8 @@ integer(i4b) :: a, i, j
 integer(i4b) :: step
 logical :: flag
 real(dp) :: tmp
-!real(dp) :: max_e
-!a = 1
-!write(*, *) a
+
 call init_run()
-!do i = 1, population
-!    call init_lat_nosym(i)
-!end do
-!call init_struct_nosym()
-!call lammps()
-!do i = 1, population
-!    pool(i) = pstruct(i)
-!end do
-!do j = 1, max_step
-!    call sort_results()
-!    call run_de_lammps(i)
-!    call lammps()
-!    write(*, *) "step = ", j
-!    max_e = 0
-!    do i = 1, population
-!        if(pstruct(i) % energy < pool(i) % energy) then
-!            pool(i) = pstruct(i)
-!        end if
-!        if(pstruct(i) % energy < max_e) then
-!            max_e = pstruct(i) % energy
-!        end if
-!    end do
-!    write(*, *) max_e
-!end do
-!call print_lmp_res()
-!close(1224)
     
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 step = Pickup_step
@@ -96,10 +69,17 @@ do j = step, max_step
     if(.not. Pickup) then
         do i = 1, population
             call write_vasp(i)
+            if(PWMAT) then 
+                call write_pwmat(i)
+            end if
         end do
         call write_input_all(j)
         write(*, *)"run pavsp"
-        call system("bash run_pvasp.sh")
+        if(PWMAT) then
+            call system("bash run_pwmat.sh")
+        else
+            call system("bash run_pvasp.sh")
+        end if
         do i = 1, population
             call read_vasp(i)
             if(hardness) then

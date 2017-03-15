@@ -1,0 +1,4 @@
+#!/bin/bash
+
+mpirun -np 1 PWmat &>log.out &
+./MV2CONTCAR.x

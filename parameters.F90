@@ -34,6 +34,7 @@ module parameters
     integer(i4b) :: num_species
     integer(i4b) :: num_ele(max_type)
     character(len = 2) :: name_element(max_type)
+    integer(i4b) :: atm_num_element(max_type) !AtomicNumberOfElements (must be added if PWMAT is applied)
     real(dp) :: volumn
     integer(i4b) :: max_step
     integer(i4b) :: population
@@ -51,6 +52,7 @@ module parameters
     logical :: Pickup
     integer :: Pickup_step
     integer :: Mystruct ! number of structs input by my own
+    logical :: PWMAT ! control of using PWMAT as ab initio software
     
     !hardness
     logical :: hardness
@@ -80,6 +82,11 @@ module parameters
     real(dp) :: shell_ctr_x, shell_ctr_y, shell_ctr_z
     real(dp) :: plate_radius, plate_height
     real(dp) :: plate_ctr_x, plate_ctr_y, plate_ctr_z
+
+    !fix atom position
+    !applied in the process of crystal searching, symmetry is implemented
+    !use the same scheme as cluster_substrate
+    logical :: fix_atom
     
     !surface
     !based on the cluster substrate part
