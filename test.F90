@@ -74,7 +74,7 @@ do j = step, max_step
             end if
         end do
         call write_input_all(j)
-        write(*, *)"run pavsp"
+        write(*, *)"run pvasp"
         if(PWMAT) then
             call system("bash run_pwmat.sh")
         else

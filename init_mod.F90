@@ -25,8 +25,8 @@ module init_mod
         open(1224,file="run_de.out")
         call read_input()
         if(.not. Pickup) then
-            call system("rm -rf results")
-            call system("mkdir results")
+            call system("rm results/de_*")
+!            call system("mkdir results")
             write(1224, *) "start de searching ......"
         else
             write(1224, *) "======CONTINUE======="
