@@ -25,7 +25,7 @@ CONTAINS
     READ(iu,*,ERR=100,END=100)
     READ(iu,*,ERR=100,END=100)
     READ(iu,*,ERR=100,END=100)
-    READ(iu,'(3I5)',ERR=100,END=100) eigen_data%NELECT,eigen_data%NKPTS,eigen_data%NB_TOT
+    READ(iu,*,ERR=100,END=100) eigen_data%NELECT,eigen_data%NKPTS,eigen_data%NB_TOT
     ALLOCATE(eigen_data%VKPT(3,eigen_data%NKPTS))
     ALLOCATE(eigen_data%WTKPT(eigen_data%NKPTS))
     ALLOCATE(eigen_data%CELTOT(eigen_data%NB_TOT,eigen_data%NKPTS,eigen_data%ISPIN))
@@ -923,7 +923,7 @@ CONTAINS
     USE EIGENVAL_mod,ONLY: read_EIGENVAL,eigen_t,del_eigen_t
     USE sort_mod,ONLY: SSORT
     USE OUTCAR_mod,ONLY: read_OUTCAR,outcar_t
-    USE parameters, ONLY : pstruct
+    USE parameters, ONLY : pstruct,ES_mod
     USE KINDS
     !USE parameters ,      ONLY : Icode
     IMPLICIT NONE
@@ -1022,19 +1022,21 @@ CONTAINS
        Eg_id=1.0d10
     END IF    
 
-    !read Matrix_elements if it exists    
-    CALL read_dipole_mat(tran_direct_gap,lexist)
+    !read Matrix_elements if it exists
+    IF((ES_mod .EQ. 5) .OR. (ES_mod .EQ. 6))THEN    
+       CALL read_dipole_mat(tran_direct_gap,lexist)
     
-    IF(lexist)THEN
-       WRITE(6,'(4x,a,3f10.3)')"Dipole_Matrix_Element: ",tran_direct_gap
-       IF(SQRT(DOT_PRODUCT(tran_direct_gap,tran_direct_gap)) .LT. 1.0d-3)THEN
-          !vanishingly small transition
-          Eg_d=Eg_d+5000
-          Eg_id=Eg_id+5000
+       IF(lexist)THEN
+          WRITE(6,'(4x,a,3f10.3)')"Dipole_Matrix_Element: ",tran_direct_gap
+          IF(SQRT(DOT_PRODUCT(tran_direct_gap,tran_direct_gap)) .LT. 1.0d-3)THEN
+             !vanishingly small transition
+             Eg_d=Eg_d+5000
+             Eg_id=Eg_id+5000
+          END IF
+       ELSE
+          Eg_d=7000
+          Eg_id=7000
        END IF
-    ELSE
-       Eg_d=7000
-       Eg_id=7000
     END IF
 
     CALL del_eigen_t(eigen_data)
