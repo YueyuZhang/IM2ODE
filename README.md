@@ -64,7 +64,7 @@ Required software:
 
 [LGPL](./Licence)
 
-IMODE程序包在General Public License (GPL) 下开源(协议的具体条款见IM2ODE协议.doc)。GPL同其它的自由软件许可证一样，许可社会公众享有：运行、复制软件的自由，发行传播软件的自由，获得软件源码的自由，改进软件并将自己作出的改进版本向社会发行传播的自由。
+IMODE程序包在General Public Licence (GPL) 下开源(协议的具体条款见IM2ODE协议.doc)。GPL同其它的自由软件许可证一样，许可社会公众享有：运行、复制软件的自由，发行传播软件的自由，获得软件源码的自由，改进软件并将自己作出的改进版本向社会发行传播的自由。
 
 ## Method
 
