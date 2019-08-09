@@ -1,5 +1,6 @@
 # Inverse Design of Materials by Multi-objective optimization
 
+
 IM2ODE, a code package for inverse designing of materials
 
 ## Content
@@ -77,9 +78,18 @@ The following mailing list will offer long-term technical support:
 
 ## 文档的组成
 在这里，IM2ODE的文档由3部分组成：[README](./README.md) ， [USERS’ GUIDE](./USERS_GUIDE.md)， DEVELOPERS’GUIDE。
+=======
+IMODE, 逆向材料设计软件包
+
+## Content
+
+文档的组成
+在这里，IMODE的文档由3部分组成：[README](./README.md) ， [USERS’ GUIDE](./USERS_GUIDE.md)， DEVELOPERS’GUIDE。
+
 - 在`README`里，会包含这个程序包的概述，特征，安装说明，作者清单和提供支持的邮件列表，开源协议。
 - 在`USERS’ GUIDE`里给出的预言不同体系的具体参数设置，程序中如何调用VASP或lammps，如何根据具体的机器环境改并行任务脚本，以及在搜索完成后如何通过后处理脚本导出预言的结构。
 - `DEVELOPERS’GUIDE`(还没开始写。。。)是一份针对开发者的文档，里面给出了程序的逻辑框架，代码示例和每个函数、子程序的功能。希望这些文档能够帮助到不同需求的用户。
+
 
 
 ## 编译前需要安装的软件
@@ -88,6 +98,17 @@ The following mailing list will offer long-term technical support:
 
 
 ## 快速安装指南
+
+## Required software
+
+Required software:
+编译前需要安装的软件
+* GNU make.
+* Fortran compiler.
+
+## Quick compilation instructions
+
+
 
 1. 下载代码
 
@@ -132,7 +153,9 @@ The following mailing list will offer long-term technical support:
 
 [LGPL](./Licence)
 
+
 IM2ODE程序包在General Public Licence (GPL) 下开源(协议的具体条款见IM2ODE协议.doc)。GPL同其它的自由软件许可证一样，许可社会公众享有：运行、复制软件的自由，发行传播软件的自由，获得软件源码的自由，改进软件并将自己作出的改进版本向社会发行传播的自由。
+
 
 ## Method
 
