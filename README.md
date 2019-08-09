@@ -1,56 +1,149 @@
-Inverse Design of Materials by Multi-objective optimization
------------------------------------------------------------
-IMODE, ÄæÏò²ÄÁÏÉè¼ÆÈí¼ş°ü
+# Inverse Design of Materials by Multi-objective optimization
 
-Content
--------
-ÎÄµµµÄ×é³É  
-ÔÚÕâÀï£¬IMODEµÄÎÄµµÓÉ3²¿·Ö×é³É£ºREADME£¬DEVELOPERS¡¯GUIDE£¬USERS¡¯ GUIDE¡£ÔÚREADMEÀï£¬»á°üº¬Õâ¸ö³ÌĞò°üµÄ¸ÅÊö£¬ÌØÕ÷£¬°²×°ËµÃ÷£¬×÷ÕßÇåµ¥ºÍÌá¹©Ö§³ÖµÄÓÊ¼şÁĞ±í£¬¿ªÔ´Ğ­Òé¡£ÔÚUSERS¡¯ GUIDEÀï¸ø³öµÄÔ¤ÑÔ²»Í¬ÌåÏµµÄ¾ßÌå²ÎÊıÉèÖÃ£¬³ÌĞòÖĞÈçºÎµ÷ÓÃVASP»òlammps£¬ÈçºÎ¸ù¾İ¾ßÌåµÄ»úÆ÷»·¾³¸Ä²¢ĞĞÈÎÎñ½Å±¾£¬ÒÔ¼°ÔÚËÑË÷Íê³ÉºóÈçºÎÍ¨¹ıºó´¦Àí½Å±¾µ¼³öÔ¤ÑÔµÄ½á¹¹¡£DEVELOPERS¡¯GUIDE£¨»¹Ã»¿ªÊ¼Ğ´¡£¡£¡££©ÊÇÒ»·İÕë¶Ô¿ª·¢ÕßµÄÎÄµµ£¬ÀïÃæ¸ø³öÁË³ÌĞòµÄÂß¼­¿ò¼Ü£¬´úÂëÊ¾ÀıºÍÃ¿¸öº¯Êı¡¢×Ó³ÌĞòµÄ¹¦ÄÜ¡£Ï£ÍûÕâĞ©ÎÄµµÄÜ¹»°ïÖúµ½²»Í¬ĞèÇóµÄÓÃ»§¡£
+IM2ODE, a code package for inverse designing of materials
 
-Required software
------------------
-Required software:  
-±àÒëÇ°ĞèÒª°²×°µÄÈí¼ş
+## Content
+
+The doc of IM2ODE is composed by three parts, including [README](./README.md) , [USERSâ€™ GUIDE](./USERS_GUIDE.md) and DEVELOPERSâ€™GUIDE
+ - There are a brief introduction, features, compilation instructions and mailing list in `README`.
+ - There are instructions for how to setup parameters, how to call vasp or lammps during the optimization process, how to write scripts for submitting jobs under different environment, and how to run the past processing scripts to output the optimal structures predicted in `USERS' GUIDE`.
+ - `DEVELOPERS' GUIDE` is still under developing...
+
+## Required software
+
+Required software:
+
 * GNU make.
 * Fortran compiler.
 
-Quick compilation instructions
-------------------------------
-¿ìËÙ°²×°Ö¸ÄÏ  
-    make  
-  
-A short version of intruduction
--------------------------------
-Ò»¸ö¼ò¶ÌµÄ½éÉÜ  
-ÈËÀàÉç»áµÄ½ø²½Àë²»¿ªĞÂ²ÄÁÏ¡£´ÓÊ¯Æ÷Ê±´ú¡¢ÇàÍ­Æ÷Ê±´úµ½ĞÅÏ¢Ê±´ú£¨¹è¼°ÆäÏà¹Ø²ÄÁÏµÄ·¢ÏÖºÍÓ¦ÓÃ£©£¬ÈËÀàÎÄÃ÷µÄ¿çÔ½Ê½·¢Õ¹Àë²»¿ªĞÂ²ÄÁÏµÄ·¢ÏÖºÍÓ¦ÓÃ¡£È»¶ø£¬´«Í³µÄÑ°ÕÒĞÂ²ÄÁÏµÄÊÖ¶ÎÊÇÍ¨¹ı²»¶ÏµØ³¢ÊÔÈËÀàÒÑ¾­·¢ÏÖµÄ²ÄÁÏ£¬¾ÍÏñ°®µÏÉú°ÙÄêÇ°³¢ÊÔÓÃ¸÷ÖÖ²»Í¬²ÄÁÏÖÆ×÷µÆË¿Ò»Ñù£¬ÕâÖÖÍ¨¹ıÃ¤Ä¿µØºÏ³É²ÄÁÏÀ´½øĞĞÉ¸Ñ¡µÄ¹ı³ÌÎŞÒÉºÄÊ±ºÄÁ¦¡£ÏÖÔÚ£¬Ëæ×Å³¬¼¶¼ÆËã»úÒÔ¼°µÚÒ»ĞÔÔ¶Àë¼ÆËã·½·¨µÄ·¢Õ¹£¬Ö»Òª¸ø¶¨Äı¾ÛÌ¬ÎïÖÊÄÚ²¿µÄÔ­×Ó¶Ñ¶â·½Ê½£¬¼´²ÄÁÏµÄÎ¢¹Û½á¹¹£¬¾ÍÄÜÍ¨¹ı¼ÆËãµÃÖª¸ÃÎïÖÊºê¹ÛµÄÎïÀíºÍ»¯Ñ§ĞÔÖÊ¡£  
-ÄæÏò²ÄÁÏÉè¼Æ£¬¾ÍÊÇ´ÓÎïÀíÑ§ºÍ²ÄÁÏ¿ÆÑ§µÄ»ù±¾Ô­Àí³ö·¢£¬´ÓÀíÂÛÉÏÔ¤ÑÔ¾ßÓĞÌØ¶¨ĞÔÖÊµÄĞÂ²ÄÁÏ£¬ÕâÊÇ¿ÆÑ§¼ÒÃÇ³¤¾ÃµÄÃÎÏë¡£Òò´Ë£¬ÎÒÃÇÓĞ±ØÒª¿ª·¢ĞÂ·½·¨À´·¢Õ¹ÄæÏò²ÄÁÏÉè¼Æ£¬Ê¹µÃÀíÂÛ½á¹¹Ô¤²â·½·¨ÄÜ¹»Ô¤ÑÔÌØ¶¨ĞÔÖÊµÄĞÂ²ÄÁÏ£¬´Ó¶øÆğµ½Ö¸µ¼ÊµÑéºÍ¼Ó¿ìĞÂ²ÄÁÏ·¢ÏÖ½ø³ÌµÄÄ¿µÄ¡£  
-ÄæÏò²ÄÁÏÉè¼ÆÈí¼ş°üµÄ¿ª·¢¹¤×÷¾ÍÊÇÔÚÕâÒ»±³¾°ÏÂ¿ªÕ¹µÄ¡£Èí¼ş°üµÄÈ«³ÆÊÇInverse Design of Materials by Multi-objective Differential Evolution, ¼´»ùÓÚ¶àÄ¿±ê²î·ÖÑİ»¯Ëã·¨½øĞĞÄæÏò²ÄÁÏÉè¼Æ¡£ÔÚÈ·¶¨ÁË¶¨Á¿µÄÄ¿±êĞÔÖÊ£¨±ÈÈç°ëµ¼ÌåµÄ´øÏ¶ºÍÓ²¶ÈµÈ£©µÄÇé¿öÏÂ£¬¸ÃÈí¼ş°üÄÜ¹»ÔÚ½ö½ö¸ø¶¨»¯Ñ§×é·ÖµÄÇé¿öÏÂ½«¾ßÓĞ¸ÃĞÔÖÊµÄÔ­×ÓÅÅ²¼×éºÏ¸øÔ¤ÑÔ³öÀ´¡£ÖÁ½ñ£¬¸ÃÈí¼ş°üÒÑ¾­±»¹úÄÚÍâÖÚ¶à¼ÆËãÎïÀíÑ§½çÍ¬ĞĞËù²ÉÓÃ£¬³ÉÎªÄæÏò²ÄÁÏÉè¼ÆÁìÓòµÄÒ»ÖÖÖØÒª·½·¨¡£
+## Quick compilation instructions
 
-Functions
----------
-Ö÷Òª¹¦ÄÜ£º  
--**Éè¼Æ¹¦ÄÜ²ÄÁÏ£º**  
--ÌØ¶¨ÄÜ´ø´øÏ¶  
--³¬Ó²²ÄÁÏ  
--**Éè¼Æ²»Í¬Î¬¶ÈµÄ²ÄÁÏ£º**  
--ÈıÎ¬¾§Ìå½á¹¹  
--¶şÎ¬²ã×´ºÍ±íÃæ½á¹¹  
--Ò»Î¬ÄÉÃ×Ìõ´ø½á¹¹  
--ÁãÎ¬ÍÅ´Ø½á¹¹ºÍ¸´ÔÓÈ±Ïİ  
 
-Licence
--------
-LGPL  
-IMODE³ÌĞò°üÔÚGeneral Public License (GPL) ÏÂ¿ªÔ´£¨Ğ­ÒéµÄ¾ßÌåÌõ¿î¼ûIM2ODEĞ­Òé.doc£©¡£GPLÍ¬ÆäËüµÄ×ÔÓÉÈí¼şĞí¿ÉÖ¤Ò»Ñù£¬Ğí¿ÉÉç»á¹«ÖÚÏíÓĞ£ºÔËĞĞ¡¢¸´ÖÆÈí¼şµÄ×ÔÓÉ£¬·¢ĞĞ´«²¥Èí¼şµÄ×ÔÓÉ£¬»ñµÃÈí¼şÔ´ÂëµÄ×ÔÓÉ£¬¸Ä½øÈí¼ş²¢½«×Ô¼º×÷³öµÄ¸Ä½ø°æ±¾ÏòÉç»á·¢ĞĞ´«²¥µÄ×ÔÓÉ¡£
+1. Downloading the code package
 
-Method
-------
-ÄæÏò²ÄÁÏÉè¼Æ·½·¨Ïà¹ØÎÄÏ×  
-Zhang YY, Gao WG, Chen SY, Xiang HJ, Gong XG*, "Inverse design of materials by multi-objective differential evolution", Comput. Mater. Sci., 2015, 98, 51-55.  
-Chen HZ, Zhang YY, Gong XG*, Xiang HJ*, "Predicting New TiO2 Phases with Low Band Gaps by a Multiobjective Global Optimization Approach", J. PHYS. Chem. C, 2014, 118, 2333-2337.  
+    Using git
+    ```
+    $ git clone https://github.com/YueyuZhang/IM2ODE.git
+    ```
+    Or downloading the `zip` file directlyï¼š
+    ```
+    $ wget https://github.com/YueyuZhang/IM2ODE/archive/master.zip -O IM2ODE.zip
+    $ unzip IM2ODE.zip
+    $ mv IM2ODE-master IM2ODE
+    ```
 
-Mailing list
-------------
-ÒÔÏÂÓÊ¼şÁĞ±íÌá¹©³¤ÆÚµÄ¼¼Êõ·şÎñÖ§³Ö  
-ÕÅÔ½Óî£ºyyzhang12@fudan.edu.cn
+2. Compiling
+
+    ```
+    $ cd IM2ODE
+    $ make >& make.log
+    ```
+
+## A brief introduction
+(For more details, please refer to the papers published as listed below)
+Inverse design is a promising approach in the realm of material science for finding structures with desired property. We developed a new package with novel algorithm for inverse design named as IM2ODE (Inverse Design of Materials by Multi-Objective Differential Evolution). The target properties of concern include the optical and electronic-structure properties of semiconductors, hardness of crystals, etc. IM2ODE can easily predict the atomic configurations with desired properties for three dimensional structure, interface and cluster, even complex defect in solid. Tests have been run on multiple systems and it has been proved that IM2ODE is highly efficient and reliable, which can be applied widely.
+
+## Functions
+
+- **Designing functional materials:**
+    - Semiconductors with a target bandgap
+    - Superhard material
+- **Designing materials with different dimensionality:**
+    - 3D crystal
+    - 2D layer structure
+    - 1D nano-ribbon
+    - 0D clusters and complicated defects
+
+## License
+
+[LGPL](./license)
+
+IM2ODE is an open source package under General Public license (GPL) license. GPL is the same with other open source licenses in guarantee the freedom in using, copying, improving and distributing the code package with the improvement. 
+
+## Method
+
+Papers related to the methods of IM2ODE
+
+- Zhang YY, Gao WG, Chen SY, Xiang HJ, Gong XG*, "Inverse design of materials by multi-objective differential evolution", Comput. Mater. Sci., 2015, 98, 51-55.
+- Chen HZ, Zhang YY, Gong XG*, Xiang HJ*, "Predicting New TiO2 Phases with Low Band Gaps by a Multiobjective Global Optimization Approach", J. PHYS. Chem. C, 2014, 118, 2333-2337.
+
+## Mailing list
+
+The following mailing list will offer long-term technical support:
+
+- Yue-Yu Zhangï¼š<yyzhang12@fudan.edu.cn>
+
+# A Chinese version of README
+
+## æ–‡æ¡£çš„ç»„æˆ
+åœ¨è¿™é‡Œï¼ŒIM2ODEçš„æ–‡æ¡£ç”±3éƒ¨åˆ†ç»„æˆï¼š[README](./README.md) ï¼Œ [USERSâ€™ GUIDE](./USERS_GUIDE.md)ï¼Œ DEVELOPERSâ€™GUIDEã€‚
+- åœ¨`README`é‡Œï¼Œä¼šåŒ…å«è¿™ä¸ªç¨‹åºåŒ…çš„æ¦‚è¿°ï¼Œç‰¹å¾ï¼Œå®‰è£…è¯´æ˜ï¼Œä½œè€…æ¸…å•å’Œæä¾›æ”¯æŒçš„é‚®ä»¶åˆ—è¡¨ï¼Œå¼€æºåè®®ã€‚
+- åœ¨`USERSâ€™ GUIDE`é‡Œç»™å‡ºçš„é¢„è¨€ä¸åŒä½“ç³»çš„å…·ä½“å‚æ•°è®¾ç½®ï¼Œç¨‹åºä¸­å¦‚ä½•è°ƒç”¨VASPæˆ–lammpsï¼Œå¦‚ä½•æ ¹æ®å…·ä½“çš„æœºå™¨ç¯å¢ƒæ”¹å¹¶è¡Œä»»åŠ¡è„šæœ¬ï¼Œä»¥åŠåœ¨æœç´¢å®Œæˆåå¦‚ä½•é€šè¿‡åå¤„ç†è„šæœ¬å¯¼å‡ºé¢„è¨€çš„ç»“æ„ã€‚
+- `DEVELOPERSâ€™GUIDE`(è¿˜æ²¡å¼€å§‹å†™ã€‚ã€‚ã€‚)æ˜¯ä¸€ä»½é’ˆå¯¹å¼€å‘è€…çš„æ–‡æ¡£ï¼Œé‡Œé¢ç»™å‡ºäº†ç¨‹åºçš„é€»è¾‘æ¡†æ¶ï¼Œä»£ç ç¤ºä¾‹å’Œæ¯ä¸ªå‡½æ•°ã€å­ç¨‹åºçš„åŠŸèƒ½ã€‚å¸Œæœ›è¿™äº›æ–‡æ¡£èƒ½å¤Ÿå¸®åŠ©åˆ°ä¸åŒéœ€æ±‚çš„ç”¨æˆ·ã€‚
+
+
+## ç¼–è¯‘å‰éœ€è¦å®‰è£…çš„è½¯ä»¶
+* GNU make.
+* Fortran compiler.
+
+
+## å¿«é€Ÿå®‰è£…æŒ‡å—
+
+1. ä¸‹è½½ä»£ç 
+
+    ä½¿ç”¨gitä¸‹è½½
+    ```
+    $ git clone https://github.com/YueyuZhang/IM2ODE.git
+    ```
+    æˆ–è€…ç›´æ¥ä¸‹è½½`zip`æ–‡ä»¶ï¼š
+    ```
+    $ wget https://github.com/YueyuZhang/IM2ODE/archive/master.zip -O IM2ODE.zip
+    $ unzip IM2ODE.zip
+    $ mv IM2ODE-master IM2ODE
+    ```
+
+1. ç¼–è¯‘å®‰è£…
+
+    ```
+    $ cd IM2ODE
+    $ make >& make.log
+    ```
+
+## A short version of intruduction
+
+ä¸€ä¸ªç®€çŸ­çš„ä»‹ç»
+äººç±»ç¤¾ä¼šçš„è¿›æ­¥ç¦»ä¸å¼€æ–°ææ–™ã€‚ä»çŸ³å™¨æ—¶ä»£ã€é’é“œå™¨æ—¶ä»£åˆ°ä¿¡æ¯æ—¶ä»£(ç¡…åŠå…¶ç›¸å…³ææ–™çš„å‘ç°å’Œåº”ç”¨)ï¼Œäººç±»æ–‡æ˜çš„è·¨è¶Šå¼å‘å±•ç¦»ä¸å¼€æ–°ææ–™çš„å‘ç°å’Œåº”ç”¨ã€‚ç„¶è€Œï¼Œä¼ ç»Ÿçš„å¯»æ‰¾æ–°ææ–™çš„æ‰‹æ®µæ˜¯é€šè¿‡ä¸æ–­åœ°å°è¯•äººç±»å·²ç»å‘ç°çš„ææ–™ï¼Œå°±åƒçˆ±è¿ªç”Ÿç™¾å¹´å‰å°è¯•ç”¨å„ç§ä¸åŒææ–™åˆ¶ä½œç¯ä¸ä¸€æ ·ï¼Œè¿™ç§é€šè¿‡ç›²ç›®åœ°åˆæˆææ–™æ¥è¿›è¡Œç­›é€‰çš„è¿‡ç¨‹æ— ç–‘è€—æ—¶è€—åŠ›ã€‚ç°åœ¨ï¼Œéšç€è¶…çº§è®¡ç®—æœºä»¥åŠç¬¬ä¸€æ€§è¿œç¦»è®¡ç®—æ–¹æ³•çš„å‘å±•ï¼Œåªè¦ç»™å®šå‡èšæ€ç‰©è´¨å†…éƒ¨çš„åŸå­å †å›æ–¹å¼ï¼Œå³ææ–™çš„å¾®è§‚ç»“æ„ï¼Œå°±èƒ½é€šè¿‡è®¡ç®—å¾—çŸ¥è¯¥ç‰©è´¨å®è§‚çš„ç‰©ç†å’ŒåŒ–å­¦æ€§è´¨ã€‚
+é€†å‘ææ–™è®¾è®¡ï¼Œå°±æ˜¯ä»ç‰©ç†å­¦å’Œææ–™ç§‘å­¦çš„åŸºæœ¬åŸç†å‡ºå‘ï¼Œä»ç†è®ºä¸Šé¢„è¨€å…·æœ‰ç‰¹å®šæ€§è´¨çš„æ–°ææ–™ï¼Œè¿™æ˜¯ç§‘å­¦å®¶ä»¬é•¿ä¹…çš„æ¢¦æƒ³ã€‚å› æ­¤ï¼Œæˆ‘ä»¬æœ‰å¿…è¦å¼€å‘æ–°æ–¹æ³•æ¥å‘å±•é€†å‘ææ–™è®¾è®¡ï¼Œä½¿å¾—ç†è®ºç»“æ„é¢„æµ‹æ–¹æ³•èƒ½å¤Ÿé¢„è¨€ç‰¹å®šæ€§è´¨çš„æ–°ææ–™ï¼Œä»è€Œèµ·åˆ°æŒ‡å¯¼å®éªŒå’ŒåŠ å¿«æ–°ææ–™å‘ç°è¿›ç¨‹çš„ç›®çš„ã€‚
+é€†å‘ææ–™è®¾è®¡è½¯ä»¶åŒ…çš„å¼€å‘å·¥ä½œå°±æ˜¯åœ¨è¿™ä¸€èƒŒæ™¯ä¸‹å¼€å±•çš„ã€‚è½¯ä»¶åŒ…çš„å…¨ç§°æ˜¯Inverse Design of Materials by Multi-objective Differential Evolution, å³åŸºäºå¤šç›®æ ‡å·®åˆ†æ¼”åŒ–ç®—æ³•è¿›è¡Œé€†å‘ææ–™è®¾è®¡ã€‚åœ¨ç¡®å®šäº†å®šé‡çš„ç›®æ ‡æ€§è´¨(æ¯”å¦‚åŠå¯¼ä½“çš„å¸¦éš™å’Œç¡¬åº¦ç­‰)çš„æƒ…å†µä¸‹ï¼Œè¯¥è½¯ä»¶åŒ…èƒ½å¤Ÿåœ¨ä»…ä»…ç»™å®šåŒ–å­¦ç»„åˆ†çš„æƒ…å†µä¸‹å°†å…·æœ‰è¯¥æ€§è´¨çš„åŸå­æ’å¸ƒç»„åˆç»™é¢„è¨€å‡ºæ¥ã€‚è‡³ä»Šï¼Œè¯¥è½¯ä»¶åŒ…å·²ç»è¢«å›½å†…å¤–ä¼—å¤šè®¡ç®—ç‰©ç†å­¦ç•ŒåŒè¡Œæ‰€é‡‡ç”¨ï¼Œæˆä¸ºé€†å‘ææ–™è®¾è®¡é¢†åŸŸçš„ä¸€ç§é‡è¦æ–¹æ³•ã€‚
+
+## Functions
+
+ä¸»è¦åŠŸèƒ½ï¼š
+- **è®¾è®¡åŠŸèƒ½ææ–™ï¼š**
+    - ç‰¹å®šèƒ½å¸¦å¸¦éš™
+    - è¶…ç¡¬ææ–™
+- **è®¾è®¡ä¸åŒç»´åº¦çš„ææ–™ï¼š**
+    - ä¸‰ç»´æ™¶ä½“ç»“æ„
+    - äºŒç»´å±‚çŠ¶å’Œè¡¨é¢ç»“æ„
+    - ä¸€ç»´çº³ç±³æ¡å¸¦ç»“æ„
+    - é›¶ç»´å›¢ç°‡ç»“æ„å’Œå¤æ‚ç¼ºé™·
+
+## Licence
+
+[LGPL](./Licence)
+
+IM2ODEç¨‹åºåŒ…åœ¨General Public Licence (GPL) ä¸‹å¼€æº(åè®®çš„å…·ä½“æ¡æ¬¾è§IM2ODEåè®®.doc)ã€‚GPLåŒå…¶å®ƒçš„è‡ªç”±è½¯ä»¶è®¸å¯è¯ä¸€æ ·ï¼Œè®¸å¯ç¤¾ä¼šå…¬ä¼—äº«æœ‰ï¼šè¿è¡Œã€å¤åˆ¶è½¯ä»¶çš„è‡ªç”±ï¼Œå‘è¡Œä¼ æ’­è½¯ä»¶çš„è‡ªç”±ï¼Œè·å¾—è½¯ä»¶æºç çš„è‡ªç”±ï¼Œæ”¹è¿›è½¯ä»¶å¹¶å°†è‡ªå·±ä½œå‡ºçš„æ”¹è¿›ç‰ˆæœ¬å‘ç¤¾ä¼šå‘è¡Œä¼ æ’­çš„è‡ªç”±ã€‚
+
+## Method
+
+é€†å‘ææ–™è®¾è®¡æ–¹æ³•ç›¸å…³æ–‡çŒ®
+
+- Zhang YY, Gao WG, Chen SY, Xiang HJ, Gong XG*, "Inverse design of materials by multi-objective differential evolution", Comput. Mater. Sci., 2015, 98, 51-55.
+- Chen HZ, Zhang YY, Gong XG*, Xiang HJ*, "Predicting New TiO2 Phases with Low Band Gaps by a Multiobjective Global Optimization Approach", J. PHYS. Chem. C, 2014, 118, 2333-2337.
+
+## Mailing list
+
+ä»¥ä¸‹é‚®ä»¶åˆ—è¡¨æä¾›é•¿æœŸçš„æŠ€æœ¯æœåŠ¡æ”¯æŒ
+
+- å¼ è¶Šå®‡ï¼š<yyzhang12@fudan.edu.cn>
 
