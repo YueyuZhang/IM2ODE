@@ -1,4 +1,6 @@
 #  IM2ODE 使用说明 - GUIDE FOR USERS
+
+👉 完整在线文档 & 功能介绍请访问官方网站：[https://yueyuzhang.github.io/im2ode.github.io/](https://yueyuzhang.github.io/im2ode.github.io/)
 ---
 
 ## de.in的参数设置

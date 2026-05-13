@@ -3,6 +3,8 @@
 
 IM2ODE, a code package for inverse designing of materials
 
+👉 **Official Website**: [https://yueyuzhang.github.io/im2ode.github.io/](https://yueyuzhang.github.io/im2ode.github.io/) (Full documentation, features introduction, application cases)
+
 ## Content
 
 The doc of IM2ODE is composed by three parts, including [README](./README.md) , [USERS’ GUIDE](./USERS_GUIDE.md) and DEVELOPERS’GUIDE
@@ -72,7 +74,7 @@ Papers related to the methods of IM2ODE
 
 The following mailing list will offer long-term technical support:
 
-- Yue-Yu Zhang：<yyzhang12@fudan.edu.cn>
+- Yue-Yu Zhang：<yueyu.zhang@sdju.edu.cn>
 
 # A Chinese version of README
 
@@ -80,6 +82,8 @@ The following mailing list will offer long-term technical support:
 在这里，IM2ODE的文档由3部分组成：[README](./README.md) ， [USERS’ GUIDE](./USERS_GUIDE.md)， DEVELOPERS’GUIDE。
 =======
 IMODE, 逆向材料设计软件包
+
+👉 **官方网站**：[https://yueyuzhang.github.io/im2ode.github.io/](https://yueyuzhang.github.io/im2ode.github.io/)（包含完整在线文档、功能介绍、应用案例）
 
 ## Content
 
@@ -168,5 +172,5 @@ IM2ODE程序包在General Public Licence (GPL) 下开源(协议的具体条款�
 
 以下邮件列表提供长期的技术服务支持
 
-- 张越宇：<yyzhang12@fudan.edu.cn>
+- 张越宇：<yueyu.zhang@sdju.edu.cn>
 
