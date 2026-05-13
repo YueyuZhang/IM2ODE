@@ -2,7 +2,6 @@
 ! File:   kinds.F90
 ! Author: zyy
 !
-! Created on 2013年4月19日, 上午8:58
 !
 
 module kinds

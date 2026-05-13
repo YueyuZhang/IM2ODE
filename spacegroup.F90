@@ -2,7 +2,6 @@
 ! File:   spacegroup.F90
 ! Author: zyy
 !
-! Created on 2013年4月24日, 下午7:24
 !
 
 module spacegroup_data

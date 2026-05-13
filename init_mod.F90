@@ -2,7 +2,6 @@
 ! File:   init_mod.F90
 ! Author: zyy
 !
-! Created on 2013年4月20日, 下午4:19
 !
 
 module init_mod

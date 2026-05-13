@@ -2,7 +2,6 @@
 ! File:   constants.F90
 ! Author: zyy
 !
-! Created on 2013年4月19日, 上午9:37
 !
 
 module constants

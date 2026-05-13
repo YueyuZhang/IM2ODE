@@ -2,7 +2,6 @@
 ! File:   init_struct.F90
 ! Author: zyy
 !
-! Created on 2013年4月21日, 上午1:25
 !
     
 module init_struct

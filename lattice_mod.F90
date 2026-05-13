@@ -2,7 +2,6 @@
 ! File:   lattice_mod.F90
 ! Author: zyy
 !
-! Created on 2013年4月20日, 下午11:57
 !
 
 module lattice_mod

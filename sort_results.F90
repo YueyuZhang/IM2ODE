@@ -2,7 +2,6 @@
 ! File:   sort_results.F90
 ! Author: zyy
 !
-! Created on 2013年4月24日, 下午2:00
 !
 module sort
     contains

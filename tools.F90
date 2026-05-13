@@ -2,7 +2,6 @@
 ! File:   tools.F90
 ! Author: zyy
 !
-! Created on 2013年4月28日, 上午8:35
 !
 
 module de_tools

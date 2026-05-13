@@ -2,7 +2,6 @@
 ! File:   run_lammps.F90
 ! Author: zyy
 !
-! Created on 2013年4月22日, 下午2:34
 !
 
 module run_lammps

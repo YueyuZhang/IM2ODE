@@ -2,7 +2,6 @@
 ! File:   differencial_evolution.F90
 ! Author: zyy
 !
-! Created on 2013年4月23日, 下午9:47
 !
 
 module differencial_evolution

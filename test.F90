@@ -2,7 +2,6 @@
 ! File:   newfortranFreeFormatFile.F90
 ! Author: zyy
 !
-! Created on 2013年4月18日, 下午5:08
 !
 
 program test
